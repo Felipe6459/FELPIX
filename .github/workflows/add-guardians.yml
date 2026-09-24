@@ -16,7 +16,6 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          s=s.replace('.jump .btn{width:112px;height:112px;', '.jump .btn{width:112px;height:112px;')
           s=s.replace('.jump .btn{width:112px;height:112px;border-radius:50%;background:', '.attack .btn{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#ffb24d,#b74618 60%,#641c0b);box-shadow:0 10px 0 #491406,0 14px 24px #0009,inset 0 3px 6px #ffffff44;font-size:36px}.jump .btn{width:112px;height:112px;border-radius:50%;background:')
           s=s.replace('@media(max-width:380px){.controls{padding:0 14px}', '@media(max-width:380px){.controls{padding:0 10px}')
           s=s.replace('.jump .btn{width:98px;height:98px;font-size:38px}', '.jump .btn{width:94px;height:94px;font-size:36px}.attack .btn{width:88px;height:88px;font-size:32px}')
@@ -32,11 +31,9 @@ jobs:
           s=s.replace('function update(dt){if(inv>0)', 'function update(dt){if(weaponCooldown>0)weaponCooldown-=dt;if(inv>0)')
           s=s.replace("if(!mush.got){mush.x+=mush.v*50*dt;", "for(const w of weapons){const wy=G()-w.y;if(!w.got&&Math.abs(w.x-(p.x+p.w/2))<36&&Math.abs(wy-(p.y+p.h/2))<40){w.got=true;ammo++;ammoN.textContent=ammo;ammoBox.classList.remove('hidden');score+=150;S.textContent=score;attackSound()}}if(!mush.got){mush.x+=mush.v*50*dt;")
           s=s.replace('}if(p.x>map.goal)next()}', "}if(boss&&!boss.dead&&p.x>map.goal-500){boss.active=true;boss.y=G()-boss.h;boss.x+=boss.dir*boss.v*dt;if(boss.x<map.goal-310)boss.dir=1;if(boss.x>map.goal-45)boss.dir=-1;if(boss.hitFlash>0)boss.hitFlash-=dt;if(hit(p,boss)){if(p.vy>0&&p.y+p.h-boss.y<25){p.vy=-650;boss.hp-=.5;boss.hitFlash=.15;score+=100;S.textContent=score;bossHit();if(boss.hp<=0)defeatBoss()}else if(inv<=0){if(power){power=false;inv=1;p.vy=-420;beep(120,.15,'sawtooth',.10)}else lose()}}if(p.x>map.goal-25&&boss.dead)next()}else if(p.x>map.goal&&boss.dead)next()}")
-          s=s.replace('for(const it of items)if(!it.got){', "for(const it of items)if(!it.got){")
           s=s.replace("if(!mush.got){const y=G()-mush.y;", "for(const w of weapons)if(!w.got){const y=G()-w.y;x.fillStyle='#ffb24d';x.fillRect(w.x-12,y-4,24,8);x.fillStyle='#fff3d0';x.fillRect(w.x+4,y-11,4,22);x.fillStyle='#7a3517';x.fillRect(w.x-17,y-5,8,10)}if(!mush.got){const y=G()-mush.y;")
-          s=s.replace("for(const e of enemies)if(!e.dead){", "if(boss&&!boss.dead&&boss.active){const by=boss.y;x.fillStyle=boss.hitFlash>0?'#fff':'#35132f';x.beginPath();x.roundRect(boss.x,by,boss.w,boss.h,18);x.fill();x.fillStyle='#ff5964';x.beginPath();x.arc(boss.x+24,by+28,9,0,7);x.arc(boss.x+58,by+28,9,0,7);x.fill();x.fillStyle='#fff';x.fillRect(boss.x+21,by+25,5,5);x.fillRect(boss.x+55,by+25,5,5);x.fillStyle='#111';x.fillRect(boss.x+20,by+52,42,8);x.fillStyle='#111c';x.fillRect(boss.x,by-18,boss.w,9);x.fillStyle='#ff4b55';x.fillRect(boss.x,by-18,boss.w*(boss.hp/boss.maxHp),9);x.fillStyle='#fff';x.font='bold 14px system-ui';x.fillText('GUARDIÃO',boss.x+5,by-23)}for(const e of enemies)if(!e.dead){" )
+          s=s.replace("for(const e of enemies)if(!e.dead){", "if(boss&&!boss.dead&&boss.active){const by=boss.y;x.fillStyle=boss.hitFlash>0?'#fff':'#35132f';x.beginPath();x.roundRect(boss.x,by,boss.w,boss.h,18);x.fill();x.fillStyle='#ff5964';x.beginPath();x.arc(boss.x+24,by+28,9,0,7);x.arc(boss.x+58,by+28,9,0,7);x.fill();x.fillStyle='#fff';x.fillRect(boss.x+21,by+25,5,5);x.fillRect(boss.x+55,by+25,5,5);x.fillStyle='#111';x.fillRect(boss.x+20,by+52,42,8);x.fillStyle='#111c';x.fillRect(boss.x,by-18,boss.w,9);x.fillStyle='#ff4b55';x.fillRect(boss.x,by-18,boss.w*(boss.hp/boss.maxHp),9);x.fillStyle='#fff';x.font='bold 14px system-ui';x.fillText('GUARDIÃO',boss.x+5,by-23)}for(const e of enemies)if(!e.dead){")
           p.write_text(s,encoding='utf-8')
-          print('patched',len(s))
       - name: Commit patch
         run: |
           git config user.name 'github-actions[bot]'
