@@ -2,20 +2,15 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>FELPIX — Aventura em cada fase</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10131c;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}
-#game{position:relative;width:100%;height:100%;background:linear-gradient(#72c8ff 0 58%,#9be27b 58%);overflow:hidden}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10131c;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none;-webkit-user-select:none;user-select:none}
+#game{position:relative;width:100%;height:100%;overflow:hidden;background:#72c8ff}
 canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
-.hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;font-weight:800;text-shadow:2px 2px #222}
-.badge{background:#111a;border:1px solid #fff4;border-radius:12px;padding:8px 12px;backdrop-filter:blur(4px)}
-.controls{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:space-between;padding:0 18px}
-.pad,.jump{display:flex;gap:12px}.btn{width:64px;height:64px;border:1px solid #fff5;border-radius:18px;background:#111b;color:#fff;font-size:28px;font-weight:900;display:grid;place-items:center;user-select:none;-webkit-user-select:none}
-.jump .btn{width:76px;background:#5b3bb5}.message{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-.panel{pointer-events:auto;text-align:center;background:#10131eee;border:1px solid #fff3;border-radius:22px;padding:24px;max-width:330px;margin:20px}
-.panel h1{margin:0 0 6px;font-size:40px;letter-spacing:2px}.panel p{color:#cbd1dc}.start{border:0;border-radius:14px;padding:13px 24px;background:#8b5cf6;color:#fff;font-weight:900;font-size:17px}
-.hidden{display:none!important}
+.hud{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;font-weight:800;text-shadow:2px 2px #222}.badge{background:#111a;border:1px solid #fff4;border-radius:12px;padding:8px 12px;backdrop-filter:blur(4px)}
+.controls{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;padding:0 18px;pointer-events:none}.pad,.jump{display:flex;gap:12px}.btn{pointer-events:auto;width:68px;height:68px;border:1px solid #fff5;border-radius:18px;background:#111b;color:#fff;font-size:28px;font-weight:900;display:grid;place-items:center;user-select:none;-webkit-user-select:none;touch-action:none}.jump .btn{width:80px;background:#5b3bb5}
+.message{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}.panel{pointer-events:auto;text-align:center;background:#10131eee;border:1px solid #fff3;border-radius:22px;padding:24px;max-width:330px;margin:20px}.panel h1{margin:0 0 6px;font-size:40px;letter-spacing:2px}.panel p{color:#cbd1dc}.start{border:0;border-radius:14px;padding:13px 24px;background:#8b5cf6;color:#fff;font-weight:900;font-size:17px;touch-action:manipulation}.hidden{display:none!important}
 @media (min-width:800px){.controls{max-width:700px;margin:auto}.btn{opacity:.8}}
 </style>
 </head>
@@ -24,38 +19,46 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 <canvas id="canvas" aria-label="FELPIX"></canvas>
 <div class="hud"><div class="badge">FELPIX</div><div class="badge">🪙 <span id="coins">0</span> &nbsp; ⭐ <span id="score">0</span></div></div>
 <div id="message" class="message"><section class="panel"><h1>FELPIX</h1><p>Corra, pule e colete moedas. Chegue ao portal no fim da fase!</p><button class="start" id="start">JOGAR</button></section></div>
-<div class="controls" aria-label="Controles">
-<div class="pad"><button class="btn" id="left" aria-label="Esquerda">◀</button><button class="btn" id="right" aria-label="Direita">▶</button></div>
-<div class="jump"><button class="btn" id="jump" aria-label="Pular">▲</button></div>
-</div>
+<div class="controls" aria-label="Controles"><div class="pad"><button class="btn" id="left" aria-label="Esquerda">◀</button><button class="btn" id="right" aria-label="Direita">▶</button></div><div class="jump"><button class="btn" id="jump" aria-label="Pular">▲</button></div></div>
 </main>
 <script>
-(()=>{const c=document.querySelector('#canvas'),x=c.getContext('2d'),coinEl=document.querySelector('#coins'),scoreEl=document.querySelector('#score'),msg=document.querySelector('#message'),start=document.querySelector('#start');let W,H,scale=1,running=false,last=0,coins=0,score=0;
-const p={x:80,y:0,w:34,h:42,vx:0,vy:0,on:false};const keys={l:false,r:false};const world={w:4200,ground:0};
+(()=>{
+const c=document.querySelector('#canvas'),ctx=c.getContext('2d'),coinEl=document.querySelector('#coins'),scoreEl=document.querySelector('#score'),msg=document.querySelector('#message'),start=document.querySelector('#start');
+let W=0,H=0,running=false,last=0,coins=0,score=0;
+const p={x:80,y:0,w:34,h:42,vx:0,vy:0,on:false};
+const keys={l:false,r:false};
+const world={w:4200,ground:0};
 const platforms=[{x:0,y:0,w:720,h:70},{x:850,y:0,w:500,h:70},{x:1500,y:0,w:620,h:70},{x:2280,y:0,w:700,h:70},{x:3150,y:0,w:1050,h:70},{x:470,y:150,w:150,h:24},{x:1030,y:145,w:170,h:24},{x:1730,y:160,w:190,h:24},{x:2500,y:140,w:190,h:24},{x:3440,y:170,w:220,h:24}];
 const items=[{x:250,y:100},{x:520,y:205},{x:930,y:100},{x:1110,y:200},{x:1630,y:100},{x:1800,y:215},{x:2410,y:100},{x:2580,y:195},{x:3330,y:100},{x:3500,y:225}];
-const enemies=[{x:610,y:0,w:34,h:30,v:1},{x:1190,y:0,w:34,h:30,v:-1},{x:1900,y:0,w:34,h:30,v:1},{x:2760,y:0,w:34,h:30,v:-1},{x:3700,y:0,w:34,h:30,v:1}];
-function resize(){const d=devicePixelRatio||1;W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);scale=Math.max(.65,Math.min(1.15,W/800));world.ground=H-120}addEventListener('resize',resize);resize();
-function reset(){p.x=80;p.y=world.ground-p.h;p.vx=p.vy=0;coins=score=0;coinEl.textContent=scoreEl.textContent=0;enemies.forEach((e,i)=>e.x=[610,1190,1900,2760,3700][i]);}
+const enemyStart=[610,1190,1900,2760,3700];
+const enemies=enemyStart.map((x,i)=>({x,y:0,w:34,h:30,v:i%2? -1:1,dead:false}));
+function resize(){const d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=Math.floor(W*d);c.height=Math.floor(H*d);ctx.setTransform(d,0,0,d,0,0);world.ground=H-120}addEventListener('resize',resize);resize();
+function platformTop(q){return world.ground-q.y-q.h}
+function reset(){p.x=80;p.y=platformTop(platforms[0])-p.h;p.vx=0;p.vy=0;p.on=true;coins=score=0;coinEl.textContent='0';scoreEl.textContent='0';items.forEach(i=>i.got=false);enemies.forEach((e,i)=>{e.x=enemyStart[i];e.dead=false;e.v= i%2? -1:1})}
 function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
-function input(id,key){const b=document.querySelector(id);const on=e=>{e.preventDefault();keys[key]=true};const off=e=>{e.preventDefault();keys[key]=false};['pointerdown','touchstart'].forEach(t=>b.addEventListener(t,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(t=>b.addEventListener(t,off,{passive:false}))}
-input('#left','l');input('#right','r');document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();if(p.on){p.vy=-720;p.on=false}});
+function bindHold(id,key){const b=document.querySelector(id);const on=e=>{e.preventDefault();keys[key]=true};const off=e=>{e.preventDefault();keys[key]=false};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,off))}
+bindHold('#left','l');bindHold('#right','r');
+document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();if(p.on){p.vy=-720;p.on=false}});
 addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.l=true;if(e.key==='ArrowRight'||e.key==='d')keys.r=true;if((e.key==='ArrowUp'||e.key==='w'||e.code==='Space')&&p.on){p.vy=-720;p.on=false}});
 addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.l=false;if(e.key==='ArrowRight'||e.key==='d')keys.r=false});
-start.onclick=()=>{reset();running=true;msg.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)};
-function update(dt){const accel=1700; p.vx+=(keys.r?accel:0)*dt;p.vx-=(keys.l?accel:0)*dt;p.vx*=Math.pow(.001,dt);p.vx=Math.max(-330,Math.min(330,p.vx));p.vy+=1900*dt;const ox=p.x,oy=p.y;p.x+=p.vx*dt;p.y+=p.vy*dt;p.on=false;
-for(const q of platforms){const py=world.ground-q.y-q.h;if(p.x+p.w>q.x&&p.x<q.x+q.w&&oy+p.h<=py&&p.y+p.h>=py&&p.vy>=0){p.y=py-p.h;p.vy=0;p.on=true}}
-p.x=Math.max(0,Math.min(world.w-p.w,p.x));if(p.y>H+100){reset()}
-for(const it of items){if(!it.got&&Math.abs((it.x+10)-(p.x+p.w/2))<28&&Math.abs((world.ground-it.y)-(p.y+p.h/2))<34){it.got=true;coins++;score+=100;coinEl.textContent=coins;scoreEl.textContent=score}}
-for(const e of enemies){e.x+=e.v*80*dt;if(e.x<50||e.x>world.w-100)e.v*=-1;e.y=world.ground-e.h;if(hit(p,e)){if(p.vy>0&&p.y+p.h-e.y<22){p.vy=-520;score+=250;scoreEl.textContent=score;e.x=-999}else reset()}}
-if(p.x>4050){running=false;msg.innerHTML='<section class="panel"><h1>FASE 1!</h1><p>Você chegou ao fim. Pontuação: <b>'+score+'</b></p><button class="start" id="again">JOGAR NOVAMENTE</button></section>';msg.classList.remove('hidden');document.querySelector('#again').onclick=()=>{reset();running=true;msg.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)}}}
-function draw(){x.clearRect(0,0,W,H);const cam=Math.max(0,Math.min(world.w-W,p.x-W*.35));x.save();x.translate(-cam,0);
-x.fillStyle='#72c8ff';x.fillRect(cam,0,W,H);for(let i=0;i<18;i++){x.fillStyle=i%2?'#ffffff55':'#ffffff33';x.beginPath();x.arc(i*280+100,100+(i%3)*55,30,0,7);x.fill()}
-for(const q of platforms){const y=world.ground-q.y-q.h;x.fillStyle='#5a3b25';x.fillRect(q.x,y,q.w,q.h);x.fillStyle='#72b84f';x.fillRect(q.x,y,q.w,10)}
-for(const it of items)if(!it.got){x.fillStyle='#ffd84a';x.beginPath();x.arc(it.x,world.ground-it.y,11,0,7);x.fill();x.fillStyle='#fff4a3';x.beginPath();x.arc(it.x-3,world.ground-it.y-3,3,0,7);x.fill()}
-for(const e of enemies)if(e.x>-100){x.fillStyle='#713b4b';x.fillRect(e.x,e.y,e.w,e.h);x.fillStyle='#fff';x.fillRect(e.x+7,e.y+7,6,6);x.fillRect(e.x+21,e.y+7,6,6)}
-x.fillStyle='#8b5cf6';x.fillRect(p.x,p.y,p.w,p.h);x.fillStyle='#fff';x.fillRect(p.x+7,p.y+10,7,7);x.fillRect(p.x+22,p.y+10,7,7);x.fillStyle='#1b1530';x.fillRect(p.x+10,p.y+29,15,5);
-x.fillStyle='#f5d76e';x.fillRect(4050,world.ground-170,12,170);x.fillStyle='#8b5cf6';x.beginPath();x.moveTo(4062,world.ground-165);x.lineTo(4140,world.ground-140);x.lineTo(4062,world.ground-115);x.fill();x.restore()}
+start.addEventListener('click',()=>{reset();running=true;msg.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)});
+function update(dt){
+const accel=1850; if(keys.r)p.vx+=accel*dt;if(keys.l)p.vx-=accel*dt;p.vx*=Math.pow(.0008,dt);p.vx=Math.max(-340,Math.min(340,p.vx));p.vy+=1900*dt;
+const ox=p.x,oy=p.y,oldBottom=oy+p.h;p.x+=p.vx*dt;p.y+=p.vy*dt;p.on=false;
+for(const q of platforms){const top=platformTop(q);if(p.x+p.w>q.x&&p.x<q.x+q.w&&oldBottom<=top+2&&p.y+p.h>=top&&p.vy>=0){p.y=top-p.h;p.vy=0;p.on=true}}
+p.x=Math.max(0,Math.min(world.w-p.w,p.x));
+if(p.y>H+120){reset();return}
+for(const it of items){const iy=world.ground-it.y;if(!it.got&&Math.abs((it.x)-(p.x+p.w/2))<30&&Math.abs(iy-(p.y+p.h/2))<35){it.got=true;coins++;score+=100;coinEl.textContent=coins;scoreEl.textContent=score}}
+for(const e of enemies){if(e.dead)continue;e.y=world.ground-e.h;e.x+=e.v*80*dt;if(e.x<50||e.x>world.w-100)e.v*=-1;if(hit(p,e)){if(p.vy>0&&p.y+p.h-e.y<22){p.vy=-520;score+=250;scoreEl.textContent=score;e.dead=true}else{reset();return}}}
+if(p.x>4050){running=false;msg.innerHTML='<section class="panel"><h1>FASE 1!</h1><p>Você chegou ao fim. Pontuação: <b>'+score+'</b></p><button class="start" id="again">JOGAR NOVAMENTE</button></section>';msg.classList.remove('hidden');document.querySelector('#again').addEventListener('click',()=>{reset();running=true;msg.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)})}}
+function draw(){ctx.clearRect(0,0,W,H);const cam=Math.max(0,Math.min(world.w-W,p.x-W*.35));ctx.save();ctx.translate(-cam,0);
+ctx.fillStyle='#72c8ff';ctx.fillRect(cam,0,W,H);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#ffffff55':'#ffffff33';ctx.beginPath();ctx.arc(i*280+100,100+(i%3)*55,30,0,Math.PI*2);ctx.fill()}
+for(const q of platforms){const y=platformTop(q);ctx.fillStyle='#5a3b25';ctx.fillRect(q.x,y,q.w,q.h);ctx.fillStyle='#72b84f';ctx.fillRect(q.x,y,q.w,10)}
+for(const it of items)if(!it.got){const y=world.ground-it.y;ctx.fillStyle='#ffd84a';ctx.beginPath();ctx.arc(it.x,y,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff4a3';ctx.beginPath();ctx.arc(it.x-3,y-3,3,0,Math.PI*2);ctx.fill()}
+for(const e of enemies)if(!e.dead){ctx.fillStyle='#713b4b';ctx.fillRect(e.x,e.y,e.w,e.h);ctx.fillStyle='#fff';ctx.fillRect(e.x+7,e.y+7,6,6);ctx.fillRect(e.x+21,e.y+7,6,6)}
+ctx.fillStyle='#8b5cf6';ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#fff';ctx.fillRect(p.x+7,p.y+10,7,7);ctx.fillRect(p.x+22,p.y+10,7,7);ctx.fillStyle='#1b1530';ctx.fillRect(p.x+10,p.y+29,15,5);
+ctx.fillStyle='#f5d76e';ctx.fillRect(4050,world.ground-170,12,170);ctx.fillStyle='#8b5cf6';ctx.beginPath();ctx.moveTo(4062,world.ground-165);ctx.lineTo(4140,world.ground-140);ctx.lineTo(4062,world.ground-115);ctx.fill();ctx.restore()}
 function loop(t){if(!running)return;const dt=Math.min(.033,(t-last)/1000);last=t;update(dt);draw();requestAnimationFrame(loop)}draw();
-})();</script>
+})();
+</script>
 </body></html>
