@@ -1,0 +1,72 @@
+name: Stabilize Rhino
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace unstable Rhino renderer
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          start=s.find('// RHINO BOSS V4:')
+          end=s.find('x.restore()}const gx=map.goal', start)
+          if start < 0 or end < 0:
+              raise SystemExit('Rhino V4 block not found')
+          stable=r'''// RHINO BOSS STABLE: renderer deliberately simple and isolated
+          const bossPhase=level;
+          const walk=Math.sin(runTime*4.2);
+          const walk2=-walk;
+          const wind=boss.attackWindup>0;
+          const slam=boss.attackCooldown>0;
+          const armor=bossPhase>=7?'#641a25':bossPhase>=4?'#704019':'#35383d';
+          const plate=bossPhase>=7?'#d44b5b':bossPhase>=4?'#c9904a':'#9ba1a8';
+          const skin='#56595d',dark='#111417',boot='#202329';
+          const bx=boss.x, by=boss.y;
+          x.save();
+          x.translate(bx,by);
+          x.fillStyle='#0008';x.beginPath();x.ellipse(55,106,52,7,0,0,Math.PI*2);x.fill();
+          // legs and boots
+          x.strokeStyle=skin;x.lineWidth=18;x.lineCap='round';x.beginPath();x.moveTo(40,58);x.lineTo(38+walk*8,80);x.lineTo(34+walk*10,101);x.stroke();x.beginPath();x.moveTo(72,58);x.lineTo(72+walk2*8,80);x.lineTo(78+walk2*10,101);x.stroke();
+          x.fillStyle=boot;x.fillRect(20+walk*10,96,28,12);x.fillRect(64+walk2*10,96,28,12);
+          // torso and armor
+          x.fillStyle=armor;x.beginPath();x.roundRect(23,22,67,48,17);x.fill();
+          x.fillStyle=plate;x.beginPath();x.roundRect(29,27,55,36,12);x.fill();
+          x.fillStyle=dark;x.fillRect(53,29,6,30);x.fillRect(36,44,40,5);
+          // arms
+          x.strokeStyle=skin;x.lineWidth=15;x.beginPath();x.moveTo(24,31);x.lineTo(10,55-walk*6);x.lineTo(12,71-walk*4);x.moveTo(89,31);x.lineTo(103,55-walk2*6);x.lineTo(101,71-walk2*4);x.stroke();
+          x.fillStyle=armor;x.beginPath();x.arc(20,29,16,0,Math.PI*2);x.arc(93,29,16,0,Math.PI*2);x.fill();
+          // rhino head facing player
+          x.fillStyle=skin;x.beginPath();x.roundRect(18,-18,50,42,16);x.fill();
+          x.fillStyle=plate;x.beginPath();x.moveTo(25,-10);x.lineTo(46,-20);x.lineTo(64,-8);x.lineTo(58,8);x.lineTo(29,8);x.closePath();x.fill();
+          x.fillStyle='#eee4c8';x.beginPath();x.moveTo(22,-1);x.lineTo(-12,-16);x.lineTo(6,13);x.closePath();x.fill();x.beginPath();x.moveTo(39,-3);x.lineTo(27,-16);x.lineTo(43,9);x.closePath();x.fill();
+          x.fillStyle='#ffbf32';x.beginPath();x.arc(29,2,4,0,Math.PI*2);x.fill();x.fillStyle='#090909';x.fillRect(28,-1,2,7);
+          x.fillStyle='#292b2f';x.beginPath();x.ellipse(7,15,18,12,0,0,Math.PI*2);x.fill();
+          // hammer, always attached to left hand
+          const ha=slam?-1.5:(wind?.7:-.5+walk*.03);x.save();x.translate(12,70-walk*4);x.rotate(ha);x.strokeStyle='#090a0c';x.lineWidth=15;x.beginPath();x.moveTo(0,0);x.lineTo(-2,-70);x.stroke();x.fillStyle='#3b3f44';x.roundRect(-40,-103,70,38,9);x.fill();x.fillStyle=plate;x.fillRect(-33,-98,54,7);x.restore();
+          if(slam){x.strokeStyle='#ffd34d';x.lineWidth=4;x.beginPath();x.arc(-25,98,11,0,Math.PI*2);x.stroke();}
+          // health bar
+          x.fillStyle='#08090a';x.fillRect(0,-31,boss.w,9);x.fillStyle='#ef5261';x.fillRect(2,-29,(boss.w-4)*Math.max(0,boss.hp/boss.maxHp),5);if(wind){x.fillStyle='#ffd34d';x.font='900 12px system-ui';x.fillText('ATAQUE!',38,-39)}
+          x.restore();}'''
+          s=s[:start]+stable+s[end+len('x.restore()}'):]
+          p.write_text(s)
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Stabilize Rhino renderer' || true
+          rm -f .github/workflows/stabilize-rhino.yml
+          git add .github/workflows/stabilize-rhino.yml
+          git commit -m 'Remove temporary Rhino workflow' || true
+          git push
