@@ -4,65 +4,113 @@ boss.y=groundY(boss.h);
 x.save();
 x.translate(boss.x,boss.y);
 
-// RHINO SAFE RENDER: somente primitivas básicas para eliminar o travamento
+// RHINO V5: desenho orgânico e martelo sincronizado com o ataque
 const rw=boss.w,rh=boss.h;
-const walk=Math.sin(runTime*4);
+const walk=Math.sin(runTime*4.2);
 const walkB=-walk;
+const wind=boss.attackWindup>0;
+const impact=boss.attackCooldown>0&&boss.attackCooldown<.62;
+const hammerAngle=impact?-1.48:wind?.72:-.52;
+
+x.save();
 
 // sombra
-x.fillStyle='rgba(0,0,0,.35)';
-x.beginPath();x.arc(rw*.5,106,48,0,Math.PI*2);x.fill();
+x.fillStyle='rgba(0,0,0,.32)';
+x.beginPath();x.ellipse(70,108,55,8,0,0,Math.PI*2);x.fill();
 
-// pernas
-x.strokeStyle='#56595d';x.lineWidth=18;x.lineCap='round';
-x.beginPath();x.moveTo(42,58);x.lineTo(36+walk*8,100);x.stroke();
-x.beginPath();x.moveTo(78,58);x.lineTo(84+walkB*8,100);x.stroke();
+// pernas articuladas
+x.strokeStyle='#3d4146';x.lineWidth=17;x.lineCap='round';
+x.beginPath();x.moveTo(45,62);x.lineTo(38+walk*7,91);x.lineTo(31+walk*9,103);x.stroke();
+x.beginPath();x.moveTo(83,62);x.lineTo(90+walkB*7,91);x.lineTo(98+walkB*9,103);x.stroke();
 
-// botas
-x.fillStyle='#202329';
-x.fillRect(20+walk*8,96,28,12);
-x.fillRect(68+walkB*8,96,28,12);
+// pés
+x.fillStyle='#24272b';
+x.beginPath();x.ellipse(29+walk*9,104,17,7,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(97+walkB*9,104,17,7,0,0,Math.PI*2);x.fill();
 
-// corpo
-x.fillStyle='#35383d';x.fillRect(24,20,72,50);
-x.fillStyle='#9ba1a8';x.fillRect(31,28,58,32);
+// corpo volumoso
+x.fillStyle='#4c5055';
+x.beginPath();x.ellipse(64,51,43,29,0,0,Math.PI*2);x.fill();
+x.fillStyle='#70757a';
+x.beginPath();x.ellipse(66,48,34,22,-.06,0,Math.PI*2);x.fill();
+
+// barriga/peitoral
+x.fillStyle='#8b9094';
+x.beginPath();x.ellipse(69,51,23,18,0,0,Math.PI*2);x.fill();
 
 // ombros
-x.fillStyle='#56595d';
-x.beginPath();x.arc(25,30,18,0,Math.PI*2);x.fill();
-x.beginPath();x.arc(95,30,18,0,Math.PI*2);x.fill();
+x.fillStyle='#5d6267';
+x.beginPath();x.ellipse(31,34,19,21,-.15,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(98,34,19,21,.15,0,Math.PI*2);x.fill();
 
-// braços
-x.strokeStyle='#56595d';x.lineWidth=15;
-x.beginPath();x.moveTo(24,34);x.lineTo(10,68-walk*5);x.stroke();
-x.beginPath();x.moveTo(96,34);x.lineTo(110,68-walkB*5);x.stroke();
+// braço esquerdo
+x.strokeStyle='#4b4f54';x.lineWidth=15;
+x.beginPath();x.moveTo(31,37);x.lineTo(17,63+walkB*3);x.lineTo(13,70+walkB*3);x.stroke();
+x.fillStyle='#303338';x.beginPath();x.ellipse(12,72+walkB*3,9,8,0,0,Math.PI*2);x.fill();
 
-// cabeça
-x.fillStyle='#56595d';
-x.beginPath();x.arc(58,4,28,0,Math.PI*2);x.fill();
+// braço direito, segurando a marreta
+x.beginPath();x.moveTo(98,37);x.lineTo(80,58+walk*3);x.lineTo(13,70+walk*3);x.stroke();
+x.fillStyle='#303338';x.beginPath();x.ellipse(13,71+walk*3,9,8,0,0,Math.PI*2);x.fill();
 
-// chifre
-x.fillStyle='#eee4c8';
-x.beginPath();x.moveTo(45,-2);x.lineTo(12,-18);x.lineTo(30,12);x.closePath();x.fill();
-x.beginPath();x.moveTo(58,-2);x.lineTo(48,-20);x.lineTo(66,10);x.closePath();x.fill();
+// pescoço
+x.fillStyle='#4a4e53';
+x.beginPath();x.ellipse(63,23,23,19,0,0,Math.PI*2);x.fill();
 
-// focinho
-x.fillStyle='#292b2f';
-x.beginPath();x.arc(31,16,16,0,Math.PI*2);x.fill();
+// cabeça de rinoceronte
+x.fillStyle='#696e73';
+x.beginPath();x.ellipse(55,4,32,27,-.08,0,Math.PI*2);x.fill();
 
-// olho
-x.fillStyle='#ffbf32';x.fillRect(48,-1,7,7);
-x.fillStyle='#111';x.fillRect(51,0,2,5);
+// orelhas
+x.fillStyle='#4a4e53';
+x.beginPath();x.ellipse(37,-7,10,16,-.45,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(72,-8,10,16,.45,0,Math.PI*2);x.fill();
+x.fillStyle='#8a6f70';
+x.beginPath();x.ellipse(38,-7,5,10,-.45,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(71,-8,5,10,.45,0,Math.PI*2);x.fill();
 
-// marreta simples
-x.strokeStyle='#111';x.lineWidth=11;
-x.beginPath();x.moveTo(13,68-walk*5);x.lineTo(13,0);x.stroke();
-x.fillStyle='#3b3f44';x.fillRect(-18,-18,62,32);
+// focinho alongado
+x.fillStyle='#555a5f';
+x.beginPath();x.ellipse(31,13,24,17,-.08,0,Math.PI*2);x.fill();
+x.fillStyle='#303337';
+x.beginPath();x.ellipse(18,15,14,10,-.08,0,Math.PI*2);x.fill();
 
-// vida
-x.fillStyle='#111';x.fillRect(0,-34,rw,8);
-x.fillStyle='#ef5261';x.fillRect(2,-32,(rw-4)*Math.max(0,boss.hp/boss.maxHp),4);
+// narinas
+x.fillStyle='#111';
+x.beginPath();x.ellipse(13,13,3,2,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(21,16,3,2,0,0,Math.PI*2);x.fill();
 
+// chifres
+x.fillStyle='#e8dcc0';
+x.beginPath();x.moveTo(45,-14);x.quadraticCurveTo(52,-31,62,-16);x.lineTo(58,1);x.closePath();x.fill();
+x.beginPath();x.moveTo(31,-9);x.quadraticCurveTo(35,-24,44,-13);x.lineTo(42,3);x.closePath();x.fill();
+
+// olho e sobrancelha
+x.fillStyle='#1a1b1d';x.fillRect(45,-1,12,5);
+x.fillStyle='#ffc83d';x.beginPath();x.arc(50,1,4,0,Math.PI*2);x.fill();
+x.fillStyle='#111';x.beginPath();x.arc(51,1,2,0,Math.PI*2);x.fill();
+
+// marreta: mesma rotação usada na colisão do update
+x.save();
+x.translate(13,70+walkB*3);
+x.rotate(hammerAngle);
+x.strokeStyle='#25272a';x.lineWidth=9;x.lineCap='round';
+x.beginPath();x.moveTo(0,0);x.lineTo(-20,-145);x.stroke();
+x.fillStyle='#35383c';
+x.beginPath();x.roundRect(-49,-163,66,29,7);x.fill();
+x.fillStyle='#62676c';
+x.fillRect(-43,-157,54,7);
+x.restore();
+
+// brilho de dano
+if(boss.hitFlash>0){
+  x.fillStyle='rgba(255,255,255,.42)';
+  x.beginPath();x.ellipse(64,45,45,38,0,0,Math.PI*2);x.fill();
+}
+
+// barra de vida
+x.fillStyle='#17191c';x.fillRect(4,-34,rw-8,9);
+x.fillStyle='#ef5261';x.fillRect(7,-31,(rw-14)*Math.max(0,boss.hp/boss.maxHp),4);
+x.strokeStyle='#d8d8d8';x.lineWidth=1;x.strokeRect(4,-34,rw-8,9);
 x.restore();
 }
 const gx=map.goal;x.fillStyle=level===2?'#65e8ff':'#f5d76e';const flagBase=groundTop();x.fillRect(gx,flagBase-170,12,170);x.fillStyle=level===2?'#22d3ee':'#8b5cf6';x.beginPath();x.moveTo(gx+12,flagBase-165);x.lineTo(gx+90,flagBase-140);x.lineTo(gx+12,flagBase-115);x.fill();x.restore()}function loop(t){if(!running)return;const rawDt=(t-last)/1000;last=t;const dt=Math.min(.05,Math.max(0,rawDt));update(dt);draw();requestAnimationFrame(loop)}function bindHold(el,prop){el.addEventListener('pointerdown',e=>{e.preventDefault();keys[prop]=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[prop]=false}))}bindHold(document.getElementById('left'),'l');bindHold(document.getElementById('right'),'r');const jumpBtn=document.getElementById('jump');let jumpBuffer=0;function requestJump(e){e.preventDefault();e.stopPropagation();if(e.pointerId!=null&&jumpBtn.setPointerCapture)try{jumpBtn.setPointerCapture(e.pointerId)}catch(_){}if(!running)return;jumpBuffer=.14;if(p.on){p.vy=-700;p.on=false;jumpBuffer=0;jump()}}jumpBtn.addEventListener('pointerdown',requestJump,{passive:false});document.getElementById('attack').addEventListener('pointerdown',e=>{e.preventDefault();if(e.pointerId!=null&&e.currentTarget.setPointerCapture)try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}attack()});start.addEventListener('click',e=>{e.preventDefault();startGame()});start.addEventListener('pointerup',e=>{e.preventDefault();startGame()});build();spawn();draw()
