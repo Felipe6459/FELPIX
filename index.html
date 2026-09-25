@@ -4,133 +4,106 @@ boss.y=groundY(boss.h);
 x.save();
 x.translate(boss.x,boss.y);
 
-// RHINO SAFE V2: rinoceronte robusto, natural e leve para evitar travamentos
-const rw=boss.w,rh=boss.h;
-const step=Math.sin(runTime*3.8);
-const step2=Math.sin(runTime*3.8+Math.PI);
-const wind=boss.attackWindup>0;
+// RHINO STABLE V4: silhueta simples de rinoceronte gladiador, desenhada sem loops
+const rw=boss.w, rh=boss.h;
+const walk=Math.sin(runTime*3.2);
 const impact=boss.attackCooldown>0&&boss.attackCooldown<.62;
+const wind=boss.attackWindup>0;
 const hammerAngle=impact?-1.48:wind?.72:-.52;
-
 x.save();
+x.translate(boss.x,boss.y);
 
 // sombra
-x.fillStyle='rgba(0,0,0,.28)';
-x.beginPath();x.ellipse(70,108,58,8,0,0,Math.PI*2);x.fill();
+x.fillStyle='rgba(0,0,0,.24)';
+x.fillRect(18,105,104,7);
 
 // pernas grossas
-x.strokeStyle='#3d4246';x.lineWidth=15;x.lineCap='round';
-x.beginPath();x.moveTo(78,63);x.lineTo(84+step2*4,88);x.lineTo(91+step2*5,102);x.stroke();
-x.beginPath();x.moveTo(57,66);x.lineTo(61+step*4,89);x.lineTo(66+step*5,102);x.stroke();
-x.beginPath();x.moveTo(38,64);x.lineTo(35+step2*4,88);x.lineTo(31+step2*5,102);x.stroke();
-x.fillStyle='#24282b';
-x.beginPath();x.ellipse(91+step2*5,103,14,6,0,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(66+step*5,103,13,6,0,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(31+step2*5,103,13,6,0,0,Math.PI*2);x.fill();
+x.fillStyle='#4f5559';
+x.fillRect(25,67,20,37+walk*2);
+x.fillRect(51,70,21,34-walk*2);
+x.fillRect(82,67,20,37+walk*2);
+x.fillStyle='#292d30';
+x.fillRect(21,99,27,9);
+x.fillRect(48,99,28,9);
+x.fillRect(78,99,28,9);
 
-// corpo grande, largo e pesado
-x.fillStyle='#666c70';
-x.beginPath();x.ellipse(67,55,50,34,-.03,0,Math.PI*2);x.fill();
-x.fillStyle='#858b8f';
-x.beginPath();x.ellipse(65,51,43,27,-.03,0,Math.PI*2);x.fill();
-x.fillStyle='#4e5458';
-x.beginPath();x.ellipse(91,51,18,23,.1,0,Math.PI*2);x.fill();
-
-// barriga e dobras
-x.fillStyle='#73797d';
-x.beginPath();x.ellipse(63,63,34,18,.03,0,Math.PI*2);x.fill();
-x.strokeStyle='#41464a';x.lineWidth=2;
-x.beginPath();x.moveTo(42,62);x.quadraticCurveTo(55,69,70,65);x.moveTo(52,70);x.quadraticCurveTo(68,76,82,68);x.stroke();
-
-// cauda
-x.strokeStyle='#454a4e';x.lineWidth=6;
-x.beginPath();x.moveTo(108,43);x.quadraticCurveTo(125,35,120,23);x.stroke();
-x.fillStyle='#292d30';x.beginPath();x.arc(120,22,5,0,Math.PI*2);x.fill();
-
-// pescoço e cabeça
-x.fillStyle='#62686c';
-x.beginPath();x.ellipse(57,29,25,25,-.08,0,Math.PI*2);x.fill();
-x.fillStyle='#7c8286';
-x.beginPath();x.ellipse(45,4,35,29,-.08,0,Math.PI*2);x.fill();
-
-// bochecha e focinho — proporção mais típica de rinoceronte
-x.fillStyle='#555b5f';
-x.beginPath();x.ellipse(38,14,25,20,.05,0,Math.PI*2);x.fill();
+// corpo maciço
 x.fillStyle='#686e72';
-x.beginPath();x.ellipse(20,15,25,17,-.08,0,Math.PI*2);x.fill();
-x.fillStyle='#303438';
-x.beginPath();x.ellipse(9,15,13,9,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(67,57,53,35,0,0,Math.PI*2);x.fill();
+x.fillStyle='#777d80';
+x.beginPath();x.ellipse(68,50,43,25,0,0,Math.PI*2);x.fill();
+
+// pescoço inclinado para a cabeça
+x.fillStyle='#5d6367';
+x.fillRect(38,20,35,43);
+x.beginPath();x.ellipse(51,30,28,27,-.15,0,Math.PI*2);x.fill();
+
+// cabeça e focinho largos
+x.fillStyle='#565c60';
+x.beginPath();x.ellipse(35,17,31,27,-.08,0,Math.PI*2);x.fill();
+x.fillStyle='#474d51';
+x.beginPath();x.ellipse(12,25,27,19,-.05,0,Math.PI*2);x.fill();
+x.fillStyle='#303437';
+x.beginPath();x.ellipse(0,26,15,12,0,0,Math.PI*2);x.fill();
 
 // narinas
-x.fillStyle='#111315';
-x.beginPath();x.ellipse(6,13,3.2,2.3,0,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(14,16,3.2,2.3,0,0,Math.PI*2);x.fill();
+x.fillStyle='#0e1011';
+x.beginPath();x.arc(1,23,3.5,0,Math.PI*2);x.fill();
+x.beginPath();x.arc(8,28,3,0,Math.PI*2);x.fill();
 
 // orelhas
-x.fillStyle='#474d51';
-x.beginPath();x.ellipse(28,-10,10,16,-.45,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(66,-9,10,16,.45,0,Math.PI*2);x.fill();
-x.fillStyle='#987579';
-x.beginPath();x.ellipse(29,-9,4,9,-.45,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(65,-8,4,9,.45,0,Math.PI*2);x.fill();
+x.fillStyle='#454b4f';
+x.beginPath();x.ellipse(22,-7,10,15,-.3,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(54,-8,10,15,.3,0,Math.PI*2);x.fill();
 
-// dois chifres com formato cônico
-x.fillStyle='#e6d2ad';
-x.beginPath();x.moveTo(32,-8);x.quadraticCurveTo(35,-29,45,-15);x.lineTo(42,3);x.closePath();x.fill();
-x.fillStyle='#d7bd91';
-x.beginPath();x.moveTo(47,-10);x.quadraticCurveTo(54,-27,60,-10);x.lineTo(56,4);x.closePath();x.fill();
+// chifres bem visíveis
+x.fillStyle='#d8c49e';
+x.beginPath();x.moveTo(23,1);x.lineTo(30,-25);x.lineTo(38,4);x.closePath();x.fill();
+x.beginPath();x.moveTo(39,1);x.lineTo(48,-19);x.lineTo(56,6);x.closePath();x.fill();
 
-// olho e sobrancelha
-x.fillStyle='#282c2f';
-x.beginPath();x.ellipse(48,0,8,5,-.1,0,Math.PI*2);x.fill();
-x.fillStyle='#d5b04b';x.beginPath();x.arc(50,0,3,0,Math.PI*2);x.fill();
-x.fillStyle='#111';x.beginPath();x.arc(51,0,1.5,0,Math.PI*2);x.fill();
-x.strokeStyle='#3b4044';x.lineWidth=4;x.beginPath();x.moveTo(42,-4);x.quadraticCurveTo(49,-8,56,-4);x.stroke();
+// olho
+x.fillStyle='#121416';x.beginPath();x.arc(39,11,6,0,Math.PI*2);x.fill();
+x.fillStyle='#d6ad43';x.beginPath();x.arc(40,11,2,0,Math.PI*2);x.fill();
 
-// rugas da face
-x.strokeStyle='rgba(40,44,47,.55)';x.lineWidth=1.5;
-x.beginPath();x.moveTo(31,5);x.quadraticCurveTo(37,9,42,10);x.moveTo(27,11);x.quadraticCurveTo(34,15,39,16);x.stroke();
-
-// armadura gladiadora simples e bem definida
-x.fillStyle='#34393d';
-x.beginPath();x.moveTo(34,27);x.quadraticCurveTo(57,18,82,27);x.lineTo(101,39);x.lineTo(94,58);x.quadraticCurveTo(65,49,38,56);x.closePath();x.fill();
-x.fillStyle='#777d80';
-x.beginPath();x.moveTo(39,28);x.quadraticCurveTo(58,22,76,29);x.lineTo(72,35);x.lineTo(43,39);x.closePath();x.fill();
-x.strokeStyle='#b5b9ba';x.lineWidth=2;x.beginPath();x.moveTo(41,29);x.lineTo(77,27);x.stroke();
-x.fillStyle='#24282b';x.fillRect(48,35,4,19);x.fillRect(62,32,4,20);x.fillRect(76,34,4,19);
-
-// tiras de couro
-x.fillStyle='#8d6a3e';x.fillRect(34,39,9,4);x.fillRect(79,49,13,4);
+// armadura gladiadora
+x.fillStyle='#292d30';
+x.fillRect(35,35,61,28);
+x.fillStyle='#7f8588';
+x.fillRect(41,32,48,7);
+x.fillStyle='#202427';
+x.fillRect(48,39,5,23);
+x.fillRect(65,38,5,24);
+x.fillRect(82,40,5,22);
+x.fillStyle='#8e6a3c';
+x.fillRect(34,45,10,5);
+x.fillRect(89,52,11,5);
 
 // braços
-x.strokeStyle='#4b5155';x.lineWidth=13;
-x.beginPath();x.moveTo(37,40);x.quadraticCurveTo(24,53,19,69);x.stroke();
-x.fillStyle='#272c30';x.beginPath();x.arc(19,70,8,0,Math.PI*2);x.fill();
+x.strokeStyle='#4b5155';x.lineWidth=13;x.lineCap='round';
+x.beginPath();x.moveTo(90,43);x.lineTo(71,67);x.lineTo(15,72);x.stroke();
+x.beginPath();x.moveTo(39,44);x.lineTo(22,71);x.stroke();
+x.fillStyle='#272b2e';
+x.beginPath();x.arc(15,72,8,0,Math.PI*2);x.fill();
+x.beginPath();x.arc(22,71,8,0,Math.PI*2);x.fill();
 
-x.beginPath();x.moveTo(91,40);x.quadraticCurveTo(82,54,71,64);x.lineTo(14,70);x.stroke();
-x.fillStyle='#272c30';x.beginPath();x.arc(14,70,8,0,Math.PI*2);x.fill();
-
-// martelo
-x.save();x.translate(14,70);x.rotate(hammerAngle);
-x.strokeStyle='#24282b';x.lineWidth=8;x.beginPath();x.moveTo(0,0);x.lineTo(-18,-145);x.stroke();
-x.fillStyle='#555b5f';x.beginPath();x.roundRect(-50,-165,68,31,7);x.fill();
-x.fillStyle='#9a9fa2';x.fillRect(-43,-158,54,6);
-x.strokeStyle='#202427';x.lineWidth=2;x.stroke();
+// martelo, usando o mesmo ângulo da colisão
+x.save();x.translate(14,72);x.rotate(hammerAngle);
+x.strokeStyle='#24282b';x.lineWidth=8;
+x.beginPath();x.moveTo(0,0);x.lineTo(-18,-145);x.stroke();
+x.fillStyle='#555b5f';x.fillRect(-50,-165,68,31);
+x.fillStyle='#a0a5a8';x.fillRect(-43,-158,54,6);
 x.restore();
 
-// dano
-if(boss.hitFlash>0){
-  x.fillStyle='rgba(255,255,255,.32)';
-  x.beginPath();x.ellipse(65,50,46,35,0,0,Math.PI*2);x.fill();
-}
-
-// vida
+// barra de vida
 x.fillStyle='#111416';x.fillRect(4,-34,rw-8,9);
 x.fillStyle='#d94755';x.fillRect(7,-31,(rw-14)*Math.max(0,boss.hp/boss.maxHp),4);
 x.strokeStyle='#dfe2e3';x.lineWidth=1;x.strokeRect(4,-34,rw-8,9);
 
-x.restore();
+if(boss.hitFlash>0){
+  x.fillStyle='rgba(255,255,255,.3)';
+  x.beginPath();x.arc(58,48,43,0,Math.PI*2);x.fill();
 }
+x.restore();
 const gx=map.goal;x.fillStyle=level===2?'#65e8ff':'#f5d76e';const flagBase=groundTop();x.fillRect(gx,flagBase-170,12,170);x.fillStyle=level===2?'#22d3ee':'#8b5cf6';x.beginPath();x.moveTo(gx+12,flagBase-165);x.lineTo(gx+90,flagBase-140);x.lineTo(gx+12,flagBase-115);x.fill();x.restore()}function loop(t){if(!running)return;const rawDt=(t-last)/1000;last=t;const dt=Math.min(.05,Math.max(0,rawDt));update(dt);draw();requestAnimationFrame(loop)}function bindHold(el,prop){el.addEventListener('pointerdown',e=>{e.preventDefault();keys[prop]=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[prop]=false}))}bindHold(document.getElementById('left'),'l');bindHold(document.getElementById('right'),'r');const jumpBtn=document.getElementById('jump');let jumpBuffer=0;function requestJump(e){e.preventDefault();e.stopPropagation();if(e.pointerId!=null&&jumpBtn.setPointerCapture)try{jumpBtn.setPointerCapture(e.pointerId)}catch(_){}if(!running)return;jumpBuffer=.14;if(p.on){p.vy=-700;p.on=false;jumpBuffer=0;jump()}}jumpBtn.addEventListener('pointerdown',requestJump,{passive:false});document.getElementById('attack').addEventListener('pointerdown',e=>{e.preventDefault();if(e.pointerId!=null&&e.currentTarget.setPointerCapture)try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}attack()});start.addEventListener('click',e=>{e.preventDefault();startGame()});start.addEventListener('pointerup',e=>{e.preventDefault();startGame()});build();spawn();draw()
 /* FELPIX_JUMP_FIX_V2 */
 (()=>{const b=document.getElementById('jump');if(!b)return;const jumpNow=e=>{e.preventDefault();e.stopImmediatePropagation();if(!running||!p.on)return;if(e.type==='pointerdown'&&e.pointerType==='mouse'&&e.button!==0)return;p.vy=-700;p.on=false;jump();};b.addEventListener('pointerdown',jumpNow,{capture:true,passive:false});b.addEventListener('touchstart',jumpNow,{capture:true,passive:false});})();
