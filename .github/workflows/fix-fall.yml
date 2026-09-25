@@ -23,3 +23,5 @@ jobs:
           git add index.html
           git diff --cached --quiet || git commit -m 'Faz queda consumir vida mesmo com poder'
           git push
+      - name: Trigger marker
+        run: echo 'trigger-final'
