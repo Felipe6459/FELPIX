@@ -26,7 +26,6 @@ jobs:
             s=s.replace(marker, projectile_update+marker, 1)
           draw_marker='for(const e of enemies)if(!e.dead){'
           projectile_draw="""for(const q of projectiles){x.save();x.translate(q.x,q.y);x.rotate(-.15);x.fillStyle='#d8d8df';x.beginPath();x.roundRect(0,0,24,9,4);x.fill();x.fillStyle='#ff9d35';x.beginPath();x.moveTo(0,2);x.lineTo(-13,5);x.lineTo(0,8);x.fill();x.restore()}"""
-          # Use the second occurrence, which is in draw(), not update().
           pos=s.find(draw_marker)
           if pos>=0:
             pos2=s.find(draw_marker,pos+1)
@@ -41,3 +40,5 @@ jobs:
           git add index.html
           git diff --cached --quiet || git commit -m 'Corrige armas visuais e queda sem poder'
           git push
+      - name: Trigger marker
+        run: echo 'trigger-2'
