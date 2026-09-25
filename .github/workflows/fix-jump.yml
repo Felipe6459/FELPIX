@@ -1,0 +1,31 @@
+name: Corrigir botao de pulo
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message != 'Corrige resposta do botao de pulo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch jump
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='/* FELPIX_JUMP_FIX_V2 */'
+          if marker not in s:
+              patch="""/* FELPIX_JUMP_FIX_V2 */
+          (()=>{const b=document.getElementById('jump');if(!b)return;const jumpNow=e=>{e.preventDefault();e.stopImmediatePropagation();if(!running||!p.on)return;if(e.type==='pointerdown'&&e.pointerType==='mouse'&&e.button!==0)return;p.vy=-700;p.on=false;jump();};b.addEventListener('pointerdown',jumpNow,{capture:true,passive:false});b.addEventListener('touchstart',jumpNow,{capture:true,passive:false});})();
+          """
+              s=s.replace('})();</script>',patch+'})();</script>')
+              p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Corrige resposta do botao de pulo'
+          git push
