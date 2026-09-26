@@ -3,104 +3,117 @@
 boss.y=groundY(boss.h);
 x.save();
 
-// RHINO GLADIATOR V8: rinoceronte bípede humanoide, cabeça/armadura/clava claramente separados
+// RHINO GLADIATOR V9: chefão gladiador humanoide, silhueta forte e armadura de arena
 const rw=boss.w,rh=boss.h;
-const walk=Math.sin(runTime*3.2),impact=boss.attackCooldown>0&&boss.attackCooldown<.62,wind=boss.attackWindup>0;
-const weaponAngle=impact?-1.42:wind?.55:-.72;
+const walk=Math.sin(runTime*3.0),impact=boss.attackCooldown>0&&boss.attackCooldown<.62,wind=boss.attackWindup>0;
+const weaponAngle=impact?-1.34:wind?.48:-.68;
 x.save();x.translate(boss.x,boss.y);
 
-// sombra
-x.fillStyle='rgba(0,0,0,.30)';x.beginPath();x.ellipse(78,110,60,7,0,0,Math.PI*2);x.fill();
+// sombra de chefão
+x.fillStyle='rgba(0,0,0,.34)';x.beginPath();x.ellipse(76,110,61,8,0,0,Math.PI*2);x.fill();
 
-// pernas grossas de humanoide
-const legA=walk*4,legB=-walk*4;
+// pernas humanoides musculosas, com joelhos e grevas
+const stride=walk*4.5;
 x.fillStyle='#4b5356';
-x.beginPath();x.moveTo(50,64);x.lineTo(72,64);x.lineTo(74,91);x.lineTo(68,103);x.lineTo(48,103);x.lineTo(55,88);x.closePath();x.fill();
-x.beginPath();x.moveTo(82,64);x.lineTo(105,64);x.lineTo(107,91);x.lineTo(114,103);x.lineTo(93,106);x.lineTo(84,89);x.closePath();x.fill();
+x.beginPath();x.moveTo(48,61);x.lineTo(71,61);x.lineTo(73,82);x.lineTo(68,100);x.lineTo(48,103);x.lineTo(54,82);x.closePath();x.fill();
+x.beginPath();x.moveTo(83,61);x.lineTo(107,61);x.lineTo(109,82);x.lineTo(115,101);x.lineTo(94,105);x.lineTo(84,83);x.closePath();x.fill();
 
-// joelheiras
-x.fillStyle='#777f82';
-x.beginPath();x.ellipse(62,80,13,10,0,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(94,80,13,10,0,0,Math.PI*2);x.fill();
+// joelheiras de metal
+x.fillStyle='#8c9497';x.beginPath();x.ellipse(61,80,13,11,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(96,80,13,11,0,0,Math.PI*2);x.fill();
+x.strokeStyle='#343a3d';x.lineWidth=2;x.beginPath();x.arc(61,80,9,0,Math.PI*2);x.arc(96,80,9,0,Math.PI*2);x.stroke();
 
-// botas/pés separados e grandes
-x.fillStyle='#252a2c';
-x.beginPath();x.moveTo(46+legA,98);x.lineTo(69+legA,98);x.lineTo(78+legA,108);x.lineTo(42+legA,108);x.closePath();x.fill();
-x.beginPath();x.moveTo(91+legB,99);x.lineTo(113+legB,99);x.lineTo(121+legB,108);x.lineTo(86+legB,108);x.closePath();x.fill();
+// sandálias/grevas pesadas
+x.fillStyle='#25292b';
+x.beginPath();x.moveTo(46+stride,96);x.lineTo(68+stride,96);x.lineTo(79+stride,108);x.lineTo(40+stride,108);x.closePath();x.fill();
+x.beginPath();x.moveTo(91-stride,97);x.lineTo(113-stride,97);x.lineTo(122-stride,108);x.lineTo(86-stride,108);x.closePath();x.fill();
+x.fillStyle='#a8783f';x.fillRect(48+stride,96,19,4);x.fillRect(92-stride,97,19,4);
 
-// quadril e abdômen eretos
-x.fillStyle='#596164';x.beginPath();x.ellipse(78,62,40,28,0,0,Math.PI*2);x.fill();
-x.fillStyle='#697174';x.beginPath();x.ellipse(76,49,33,28,0,0,Math.PI*2);x.fill();
+// cintura larga de gladiador
+x.fillStyle='#282d30';x.beginPath();x.moveTo(42,60);x.lineTo(109,60);x.lineTo(102,75);x.lineTo(49,75);x.closePath();x.fill();
+x.fillStyle='#b58a48';x.fillRect(47,63,57,7);
+x.fillStyle='#d6b86f';x.fillRect(71,61,9,10);
 
-// pescoço curto, grosso e vertical
-x.fillStyle='#4e5659';x.beginPath();x.ellipse(54,31,25,29,-.05,0,Math.PI*2);x.fill();
-x.fillStyle='#71797c';x.beginPath();x.ellipse(54,29,17,23,-.05,0,Math.PI*2);x.fill();
+// tronco largo, largo e ereto
+x.fillStyle='#596164';x.beginPath();x.ellipse(77,47,38,31,0,0,Math.PI*2);x.fill();
+x.fillStyle='#737b7e';x.beginPath();x.ellipse(73,43,29,25,0,0,Math.PI*2);x.fill();
 
-// cabeça grande de rinoceronte
-x.fillStyle='#555d60';x.beginPath();x.ellipse(35,17,34,29,-.08,0,Math.PI*2);x.fill();
-x.fillStyle='#42494b';x.beginPath();x.ellipse(10,28,31,21,-.03,0,Math.PI*2);x.fill();
-x.fillStyle='#303537';x.beginPath();x.ellipse(-5,31,17,14,0,0,Math.PI*2);x.fill();
+// peitoral segmentado
+x.fillStyle='#22272a';x.beginPath();x.moveTo(42,31);x.lineTo(78,29);x.lineTo(98,52);x.lineTo(89,67);x.lineTo(44,65);x.closePath();x.fill();
+x.fillStyle='#9da4a7';x.beginPath();x.moveTo(46,32);x.lineTo(76,30);x.lineTo(88,38);x.lineTo(47,41);x.closePath();x.fill();
+x.strokeStyle='#c5c9ca';x.lineWidth=2;x.beginPath();x.moveTo(52,41);x.lineTo(51,63);x.moveTo(65,39);x.lineTo(65,65);x.moveTo(79,38);x.lineTo(79,65);x.stroke();
 
-// orelhas largas
-x.fillStyle='#3e4548';x.beginPath();x.ellipse(19,-9,11,16,-.3,0,Math.PI*2);x.fill();
-x.fillStyle='#747c7f';x.beginPath();x.ellipse(19,-9,5,10,-.3,0,Math.PI*2);x.fill();
-x.fillStyle='#3e4548';x.beginPath();x.ellipse(58,-7,11,15,.25,0,Math.PI*2);x.fill();
-x.fillStyle='#747c7f';x.beginPath();x.ellipse(58,-7,5,9,.25,0,Math.PI*2);x.fill();
+// capa curta de arena
+x.fillStyle='#6d2d35';x.beginPath();x.moveTo(43,35);x.lineTo(30,43);x.lineTo(35,65);x.lineTo(47,60);x.closePath();x.fill();
+x.fillStyle='#8d414b';x.beginPath();x.moveTo(37,40);x.lineTo(31,45);x.lineTo(36,59);x.lineTo(42,56);x.closePath();x.fill();
 
-// chifre grande e único
-x.fillStyle='#bda06a';x.beginPath();
-x.moveTo(24,8);x.quadraticCurveTo(28,-3,37,-34);x.quadraticCurveTo(41,-47,45,-33);
-x.quadraticCurveTo(43,-12,35,9);x.closePath();x.fill();
-x.fillStyle='#ead8a9';x.beginPath();
-x.moveTo(31,5);x.quadraticCurveTo(35,-8,41,-32);x.quadraticCurveTo(42,-38,43,-30);
-x.quadraticCurveTo(39,-10,34,6);x.closePath();x.fill();
+// pescoço grosso
+x.fillStyle='#4e5659';x.beginPath();x.ellipse(54,28,25,25,0,0,Math.PI*2);x.fill();
+x.fillStyle='#737b7e';x.beginPath();x.ellipse(55,27,17,20,0,0,Math.PI*2);x.fill();
 
-// olho agressivo + sobrancelha + rugas
-x.strokeStyle='#202527';x.lineWidth=4;x.beginPath();x.moveTo(33,7);x.quadraticCurveTo(42,1,51,7);x.stroke();
-x.fillStyle='#0a0c0d';x.beginPath();x.ellipse(42,12,5,4,0,0,Math.PI*2);x.fill();
-x.fillStyle='#d9bd62';x.beginPath();x.arc(43,12,1.5,0,Math.PI*2);x.fill();
-x.strokeStyle='#252a2c';x.lineWidth=2;x.beginPath();
-x.moveTo(2,21);x.quadraticCurveTo(13,17,24,22);
-x.moveTo(0,39);x.quadraticCurveTo(12,44,24,38);x.stroke();
+// cabeça grande e baixa de rinoceronte
+x.fillStyle='#555d60';x.beginPath();x.ellipse(35,15,35,30,-.08,0,Math.PI*2);x.fill();
+x.fillStyle='#454c4f';x.beginPath();x.ellipse(8,27,32,22,-.03,0,Math.PI*2);x.fill();
+x.fillStyle='#303638';x.beginPath();x.ellipse(-7,31,18,15,0,0,Math.PI*2);x.fill();
 
-// duas narinas bem visíveis
-x.fillStyle='#0b0d0e';x.beginPath();x.ellipse(1,27,4.5,3.5,0,0,Math.PI*2);x.ellipse(12,30,4,3,0,0,Math.PI*2);x.fill();
+// orelhas
+x.fillStyle='#3b4245';x.beginPath();x.ellipse(18,-10,11,16,-.3,0,Math.PI*2);x.fill();
+x.fillStyle='#777f82';x.beginPath();x.ellipse(18,-10,5,10,-.3,0,Math.PI*2);x.fill();
+x.fillStyle='#3b4245';x.beginPath();x.ellipse(58,-8,11,15,.25,0,Math.PI*2);x.fill();
+x.fillStyle='#777f82';x.beginPath();x.ellipse(58,-8,5,9,.25,0,Math.PI*2);x.fill();
 
-// boca pesada
-x.strokeStyle='#171a1b';x.lineWidth=3;x.beginPath();x.moveTo(-2,39);x.quadraticCurveTo(10,45,24,39);x.stroke();
+// chifre único enorme
+x.fillStyle='#b9975c';x.beginPath();
+x.moveTo(22,7);x.quadraticCurveTo(27,-5,37,-37);x.quadraticCurveTo(42,-50,46,-35);
+x.quadraticCurveTo(44,-12,35,9);x.closePath();x.fill();
+x.fillStyle='#f0dfb1';x.beginPath();
+x.moveTo(30,5);x.quadraticCurveTo(35,-9,41,-35);x.quadraticCurveTo(43,-42,44,-32);
+x.quadraticCurveTo(40,-11,34,6);x.closePath();x.fill();
 
-// peitoral/armadura de gladiador
-x.fillStyle='#22272a';x.beginPath();x.moveTo(40,35);x.lineTo(82,33);x.lineTo(99,56);x.lineTo(91,73);x.lineTo(43,70);x.closePath();x.fill();
-x.fillStyle='#8b9295';x.beginPath();x.moveTo(45,34);x.lineTo(78,32);x.lineTo(88,40);x.lineTo(46,43);x.closePath();x.fill();
-x.strokeStyle='#b8bdc0';x.lineWidth=2;x.beginPath();x.moveTo(52,42);x.lineTo(51,68);x.moveTo(66,40);x.lineTo(66,70);x.moveTo(80,39);x.lineTo(80,69);x.stroke();
-x.fillStyle='#a87c40';x.fillRect(43,59,48,6);
+// sobrancelha, olho e rugas
+x.strokeStyle='#202426';x.lineWidth=5;x.beginPath();x.moveTo(31,6);x.quadraticCurveTo(42,-1,52,6);x.stroke();
+x.fillStyle='#090b0c';x.beginPath();x.ellipse(42,12,5.5,4.2,0,0,Math.PI*2);x.fill();
+x.fillStyle='#e0c45e';x.beginPath();x.arc(43,12,1.6,0,Math.PI*2);x.fill();
+x.strokeStyle='#252a2c';x.lineWidth=2;x.beginPath();x.moveTo(2,20);x.quadraticCurveTo(13,16,24,21);x.moveTo(-1,39);x.quadraticCurveTo(11,45,25,39);x.stroke();
+x.fillStyle='#090b0c';x.beginPath();x.ellipse(0,28,4.5,3.5,0,0,Math.PI*2);x.ellipse(11,31,4,3,0,0,Math.PI*2);x.fill();
 
-// ombreira bem definida
-x.fillStyle='#303638';x.beginPath();x.ellipse(91,39,17,15,.15,0,Math.PI*2);x.fill();
-x.strokeStyle='#c09552';x.lineWidth=3;x.beginPath();x.arc(91,39,13,-1.25,.95);x.stroke();
+// elmo/coroa de gladiador atrás da cabeça
+x.fillStyle='#24292b';x.beginPath();x.moveTo(20,-2);x.lineTo(29,-25);x.lineTo(36,-9);x.lineTo(45,-28);x.lineTo(53,-2);x.lineTo(61,2);x.lineTo(55,8);x.lineTo(20,8);x.closePath();x.fill();
+x.fillStyle='#b58a48';x.fillRect(24,-3,34,5);
 
-// braço esquerdo livre
-x.strokeStyle='#4c5558';x.lineWidth=16;x.lineCap='round';x.beginPath();x.moveTo(44,42);x.lineTo(29,57);x.lineTo(24,72);x.stroke();
-x.fillStyle='#252a2c';x.beginPath();x.arc(23,73,10,0,Math.PI*2);x.fill();
+// ombreira grande
+x.fillStyle='#303638';x.beginPath();x.ellipse(91,38,18,16,.15,0,Math.PI*2);x.fill();
+x.strokeStyle='#d0a45b';x.lineWidth=3;x.beginPath();x.arc(91,38,14,-1.3,.95);x.stroke();
+x.fillStyle='#70787b';x.beginPath();x.arc(91,38,7,0,Math.PI*2);x.fill();
 
-// braço direito claramente segurando o cabo
-x.strokeStyle='#4c5558';x.lineWidth=17;x.beginPath();x.moveTo(89,43);x.lineTo(78,57);x.lineTo(18,73);x.stroke();
-x.fillStyle='#252a2c';x.beginPath();x.arc(18,73,10,0,Math.PI*2);x.fill();
+// braço esquerdo livre, musculoso
+x.strokeStyle='#4b5457';x.lineWidth=17;x.lineCap='round';x.beginPath();x.moveTo(43,40);x.lineTo(28,54);x.lineTo(24,71);x.stroke();
+x.fillStyle='#262b2d';x.beginPath();x.arc(23,72,10,0,Math.PI*2);x.fill();
+x.strokeStyle='#a2a8aa';x.lineWidth=3;x.beginPath();x.moveTo(29,55);x.lineTo(25,67);x.stroke();
 
-// CLAVA de guerra: cabo longo e cabeça pesada, sem formato de escudo
-x.save();x.translate(16,73);x.rotate(weaponAngle);
-x.strokeStyle='#211c18';x.lineWidth=9;x.lineCap='round';x.beginPath();x.moveTo(0,0);x.lineTo(-7,-83);x.stroke();
-x.strokeStyle='#754a2c';x.lineWidth=5;x.beginPath();x.moveTo(0,0);x.lineTo(-7,-83);x.stroke();
-x.fillStyle='#4f5558';x.beginPath();x.ellipse(-9,-103,23,30,.08,0,Math.PI*2);x.fill();
-x.fillStyle='#858c8f';x.beginPath();x.ellipse(-14,-111,12,17,-.15,0,Math.PI*2);x.fill();
+// braço direito apontando para a clava
+x.strokeStyle='#4b5457';x.lineWidth=18;x.beginPath();x.moveTo(88,41);x.lineTo(75,55);x.lineTo(18,72);x.stroke();
+x.fillStyle='#262b2d';x.beginPath();x.arc(18,72,11,0,Math.PI*2);x.fill();
 
-// seis espinhos longos e grossos, saindo da cabeça
-x.fillStyle='#d8b86f';
-const spikes=[[-23,-124,-51,-141],[-31,-108,-61,-111],[-28,-92,-56,-77],[-10,-78,-11,-51],[7,-91,34,-74],[9,-108,37,-101]];
+// CLAVA: cabeça compacta e assimétrica, cabo longo e espinhos grandes
+x.save();x.translate(16,72);x.rotate(weaponAngle);
+x.strokeStyle='#211b17';x.lineWidth=10;x.lineCap='round';x.beginPath();x.moveTo(0,0);x.lineTo(-8,-84);x.stroke();
+x.strokeStyle='#7b4c2d';x.lineWidth=5;x.beginPath();x.moveTo(0,0);x.lineTo(-8,-84);x.stroke();
+x.fillStyle='#4e5558';x.beginPath();x.ellipse(-10,-104,24,29,-.08,0,Math.PI*2);x.fill();
+x.fillStyle='#8c9396';x.beginPath();x.ellipse(-15,-111,12,17,-.15,0,Math.PI*2);x.fill();
+x.fillStyle='#d9b86e';
+const spikes=[[-25,-124,-54,-141],[-32,-108,-64,-112],[-29,-92,-56,-78],[-11,-79,-13,-51],[7,-91,35,-75],[10,-109,40,-102]];
 for(const z of spikes){x.beginPath();x.moveTo(z[0]-3,z[1]);x.lineTo(z[2],z[3]);x.lineTo(z[0]+3,z[1]+3);x.closePath();x.fill();}
-x.strokeStyle='#262a2c';x.lineWidth=3;x.beginPath();x.ellipse(-9,-103,23,30,.08,0,Math.PI*2);x.stroke();
+x.strokeStyle='#262a2c';x.lineWidth=3;x.beginPath();x.ellipse(-10,-104,24,29,-.08,0,Math.PI*2);x.stroke();
+x.fillStyle='#c49a50';x.fillRect(-29,-82,9,8);
 x.restore();
 
+// barra de vida do chefão
+x.fillStyle='#111416';x.fillRect(4,-40,rw-8,10);
+x.fillStyle='#d94755';x.fillRect(7,-37,(rw-14)*Math.max(0,boss.hp/boss.maxHp),5);
+x.strokeStyle='#f0f2f2';x.lineWidth=1;x.strokeRect(4,-40,rw-8,10);
+if(boss.hitFlash>0){x.fillStyle='rgba(255,255,255,.25)';x.beginPath();x.arc(58,46,49,0,Math.PI*2);x.fill();}
+x.restore();
 // barra de vida
 x.fillStyle='#111416';x.fillRect(4,-38,rw-8,9);
 x.fillStyle='#d94755';x.fillRect(7,-35,(rw-14)*Math.max(0,boss.hp/boss.maxHp),4);
