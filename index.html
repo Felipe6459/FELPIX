@@ -3,8 +3,8 @@
 boss.y=groundY(boss.h);
 x.save();
 
-// RHINO REALISTIC V5: rinoceronte gladiador de um chifre, visual detalhado e leve
-const rw=boss.w, rh=boss.h;
+// RHINO GLADIATOR V6: rinoceronte robusto de um chifre + clava de espinhos
+const rw=boss.w,rh=boss.h;
 const walk=Math.sin(runTime*3.2);
 const impact=boss.attackCooldown>0&&boss.attackCooldown<.62;
 const wind=boss.attackWindup>0;
@@ -14,115 +14,149 @@ x.translate(boss.x,boss.y);
 
 // sombra
 x.fillStyle='rgba(0,0,0,.28)';
-x.beginPath();x.ellipse(70,109,55,6,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(70,109,58,6,0,0,Math.PI*2);x.fill();
 
-// pernas traseiras e dianteiras
-x.fillStyle='#454b4e';
-x.beginPath();x.rect(25,65,22,40);x.fill();
-x.beginPath();x.rect(52,69,22,36);x.fill();
-x.beginPath();x.rect(82,64,23,41);x.fill();
+// quatro pernas, grossas e curtas, com pés de rinoceronte
+const rear=walk*2.5,front=-walk*2.5;
+x.fillStyle='#4b5154';
+x.beginPath();x.rect(74,63,24,43);x.fill();
+x.beginPath();x.rect(91,65,22,41);x.fill();
+x.beginPath();x.rect(42,65,23,42);x.fill();
+x.beginPath();x.rect(24,68,22,39);x.fill();
 x.fillStyle='#292d30';
-x.fillRect(21,99,29,9);x.fillRect(48,99,30,9);x.fillRect(78,99,31,9);
+x.beginPath();x.moveTo(72,100);x.lineTo(100,100);x.lineTo(105,108);x.lineTo(70,108);x.closePath();x.fill();
+x.beginPath();x.moveTo(90,100);x.lineTo(116,100);x.lineTo(120,108);x.lineTo(88,108);x.closePath();x.fill();
+x.beginPath();x.moveTo(39,101);x.lineTo(67,101);x.lineTo(70,108);x.lineTo(37,108);x.closePath();x.fill();
+x.beginPath();x.moveTo(22,101);x.lineTo(48,101);x.lineTo(50,108);x.lineTo(20,108);x.closePath();x.fill();
 
-// corpo volumoso
-x.fillStyle='#62686b';
-x.beginPath();x.ellipse(67,59,55,34,0,0,Math.PI*2);x.fill();
-x.fillStyle='#777d80';
-x.beginPath();x.ellipse(70,49,45,25,-.04,0,Math.PI*2);x.fill();
-x.fillStyle='#4c5255';
-x.beginPath();x.ellipse(91,61,25,24,.08,0,Math.PI*2);x.fill();
+// corpo pesado de rinoceronte
+x.fillStyle='#5f6669';
+x.beginPath();x.ellipse(73,59,53,34,.02,0,Math.PI*2);x.fill();
+x.fillStyle='#747a7d';
+x.beginPath();x.ellipse(75,48,44,25,-.04,0,Math.PI*2);x.fill();
+x.fillStyle='#4b5154';
+x.beginPath();x.ellipse(96,62,27,25,.06,0,Math.PI*2);x.fill();
 
-// dobras da pele
-x.strokeStyle='#4b5154';x.lineWidth=3;x.lineCap='round';
-x.beginPath();x.moveTo(62,38);x.quadraticCurveTo(54,54,61,70);x.moveTo(78,36);x.quadraticCurveTo(70,53,78,73);x.moveTo(92,44);x.quadraticCurveTo(87,57,94,72);x.stroke();
+// cauda curta característica
+x.strokeStyle='#42484b';x.lineWidth=5;x.lineCap='round';
+x.beginPath();x.moveTo(120,51);x.quadraticCurveTo(132,56,128,68);x.stroke();
+x.fillStyle='#303538';x.beginPath();x.arc(128,68,4,0,Math.PI*2);x.fill();
 
-// pescoço forte inclinado
-x.fillStyle='#5a6063';
-x.beginPath();x.ellipse(48,34,31,34,-.2,0,Math.PI*2);x.fill();
-x.fillStyle='#707679';
-x.beginPath();x.ellipse(50,31,24,27,-.2,0,Math.PI*2);x.fill();
+// dobras e placas naturais da pele
+x.strokeStyle='#464c4f';x.lineWidth=3;
+x.beginPath();
+x.moveTo(58,39);x.quadraticCurveTo(51,55,58,73);
+x.moveTo(73,34);x.quadraticCurveTo(67,53,74,76);
+x.moveTo(89,38);x.quadraticCurveTo(84,55,91,75);
+x.moveTo(103,45);x.quadraticCurveTo(99,58,105,72);
+x.stroke();
 
-// cabeça típica de rinoceronte
+// pescoço muito forte
 x.fillStyle='#555b5e';
-x.beginPath();x.ellipse(34,19,32,27,-.08,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(48,38,32,34,-.18,0,Math.PI*2);x.fill();
+x.fillStyle='#707679';
+x.beginPath();x.ellipse(50,34,24,28,-.18,0,Math.PI*2);x.fill();
+
+// cabeça larga, focinho curto e pesado
+x.fillStyle='#555b5e';
+x.beginPath();x.ellipse(35,20,33,28,-.08,0,Math.PI*2);x.fill();
 x.fillStyle='#474d50';
-x.beginPath();x.ellipse(14,28,27,19,-.04,0,Math.PI*2);x.fill();
-x.fillStyle='#34383b';
-x.beginPath();x.ellipse(1,30,16,13,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(13,29,28,19,-.02,0,Math.PI*2);x.fill();
+x.fillStyle='#353a3d';
+x.beginPath();x.ellipse(1,31,17,14,0,0,Math.PI*2);x.fill();
 
-// pele do focinho
+// rugas do focinho
 x.strokeStyle='#25292b';x.lineWidth=2;
-x.beginPath();x.moveTo(2,21);x.quadraticCurveTo(13,16,22,22);x.moveTo(1,37);x.quadraticCurveTo(12,42,23,37);x.stroke();
-
-// narinas
-x.fillStyle='#0d0f10';
-x.beginPath();x.ellipse(1,27,4,3.2,0,0,Math.PI*2);x.fill();
-x.beginPath();x.ellipse(10,31,3.2,2.6,0,0,Math.PI*2);x.fill();
-
-// orelhas
-x.fillStyle='#42484b';
-x.beginPath();x.ellipse(22,-7,10,16,-.28,0,Math.PI*2);x.fill();
-x.fillStyle='#666d70';
-x.beginPath();x.ellipse(22,-7,5,10,-.28,0,Math.PI*2);x.fill();
-x.fillStyle='#42484b';
-x.beginPath();x.ellipse(55,-6,10,15,.25,0,Math.PI*2);x.fill();
-x.fillStyle='#666d70';
-x.beginPath();x.ellipse(55,-6,5,9,.25,0,Math.PI*2);x.fill();
-
-// um único chifre central, grande e curvado
-x.fillStyle='#c9b38a';
 x.beginPath();
-x.moveTo(23,5);
-x.quadraticCurveTo(27,-3,34,-29);
-x.quadraticCurveTo(37,-38,41,-27);
-x.quadraticCurveTo(39,-7,34,8);
-x.closePath();
-x.fill();
-x.fillStyle='#e6d2a8';
+x.moveTo(1,21);x.quadraticCurveTo(12,17,22,23);
+x.moveTo(1,38);x.quadraticCurveTo(12,43,23,38);
+x.stroke();
+
+// duas narinas visíveis
+x.fillStyle='#0b0d0e';
+x.beginPath();x.ellipse(2,28,4.2,3.1,0,0,Math.PI*2);x.fill();
+x.beginPath();x.ellipse(11,32,3.2,2.5,0,0,Math.PI*2);x.fill();
+
+// orelhas pequenas, arredondadas
+x.fillStyle='#3f4548';
+x.beginPath();x.ellipse(22,-6,10,14,-.3,0,Math.PI*2);x.fill();
+x.fillStyle='#686f72';
+x.beginPath();x.ellipse(22,-6,5,9,-.3,0,Math.PI*2);x.fill();
+x.fillStyle='#3f4548';
+x.beginPath();x.ellipse(54,-5,10,14,.25,0,Math.PI*2);x.fill();
+x.fillStyle='#686f72';
+x.beginPath();x.ellipse(54,-5,5,9,.25,0,Math.PI*2);x.fill();
+
+// UM ÚNICO CHIFRE grande, central e curvado
+x.fillStyle='#bfa477';
 x.beginPath();
-x.moveTo(29,2);
-x.quadraticCurveTo(33,-7,37,-27);
-x.quadraticCurveTo(38,-31,39,-25);
-x.quadraticCurveTo(36,-8,33,3);
-x.closePath();
-x.fill();
+x.moveTo(23,7);
+x.quadraticCurveTo(28,-4,34,-31);
+x.quadraticCurveTo(37,-42,42,-30);
+x.quadraticCurveTo(40,-8,34,9);
+x.closePath();x.fill();
+x.fillStyle='#ead7ad';
+x.beginPath();
+x.moveTo(29,4);
+x.quadraticCurveTo(33,-7,38,-29);
+x.quadraticCurveTo(39,-34,40,-27);
+x.quadraticCurveTo(36,-8,33,5);
+x.closePath();x.fill();
 
-// olho e sobrancelha
-x.strokeStyle='#303538';x.lineWidth=3;
-x.beginPath();x.moveTo(34,7);x.quadraticCurveTo(41,3,46,7);x.stroke();
-x.fillStyle='#111315';x.beginPath();x.ellipse(40,11,5,4,0,0,Math.PI*2);x.fill();
-x.fillStyle='#d5b65a';x.beginPath();x.arc(41,11,1.7,0,Math.PI*2);x.fill();
+// olho pequeno e expressivo
+x.strokeStyle='#292d30';x.lineWidth=3;
+x.beginPath();x.moveTo(34,8);x.quadraticCurveTo(41,3,47,7);x.stroke();
+x.fillStyle='#0b0d0e';x.beginPath();x.ellipse(40,12,5,4,0,0,Math.PI*2);x.fill();
+x.fillStyle='#d6b95e';x.beginPath();x.arc(41,12,1.6,0,Math.PI*2);x.fill();
 
-// armadura gladiadora: peitoral, gola e ombreira
-x.fillStyle='#25292c';
-x.beginPath();x.moveTo(34,36);x.lineTo(87,34);x.lineTo(101,60);x.lineTo(88,72);x.lineTo(42,68);x.closePath();x.fill();
-x.fillStyle='#747b7e';
-x.beginPath();x.moveTo(40,34);x.lineTo(84,32);x.lineTo(91,39);x.lineTo(43,42);x.closePath();x.fill();
-x.strokeStyle='#a4aaad';x.lineWidth=2;
-x.beginPath();x.moveTo(48,42);x.lineTo(48,66);x.moveTo(66,40);x.lineTo(66,69);x.moveTo(83,39);x.lineTo(83,67);x.stroke();
-x.fillStyle='#9a713f';x.fillRect(39,58,53,5);
+// armadura gladiadora sem esconder o animal
+x.fillStyle='#24282b';
+x.beginPath();x.moveTo(36,35);x.lineTo(84,33);x.lineTo(100,57);x.lineTo(89,72);x.lineTo(43,69);x.closePath();x.fill();
+x.fillStyle='#858b8e';
+x.beginPath();x.moveTo(42,34);x.lineTo(82,32);x.lineTo(90,39);x.lineTo(44,42);x.closePath();x.fill();
+x.strokeStyle='#b1b5b7';x.lineWidth=2;
+x.beginPath();x.moveTo(49,42);x.lineTo(49,66);x.moveTo(65,40);x.lineTo(65,68);x.moveTo(81,39);x.lineTo(81,67);x.stroke();
+x.fillStyle='#9b733f';x.fillRect(40,58,52,5);
 
-// ombreira
+// ombreira larga
 x.fillStyle='#303538';
-x.beginPath();x.ellipse(91,39,17,15,.25,0,Math.PI*2);x.fill();
-x.strokeStyle='#9b7b4d';x.lineWidth=3;x.beginPath();x.arc(91,39,13,-1.2,.9);x.stroke();
+x.beginPath();x.ellipse(92,39,17,15,.2,0,Math.PI*2);x.fill();
+x.strokeStyle='#a17c49';x.lineWidth=3;x.beginPath();x.arc(92,39,13,-1.2,.9);x.stroke();
 
-// braços musculosos e braçadeiras
-x.strokeStyle='#4b5154';x.lineWidth=14;x.lineCap='round';
-x.beginPath();x.moveTo(88,43);x.lineTo(72,65);x.lineTo(18,72);x.stroke();
-x.beginPath();x.moveTo(41,44);x.lineTo(25,70);x.stroke();
-x.strokeStyle='#858b8e';x.lineWidth=5;
-x.beginPath();x.moveTo(66,61);x.lineTo(54,70);x.moveTo(31,60);x.lineTo(24,70);x.stroke();
-x.fillStyle='#222628';
-x.beginPath();x.arc(18,72,9,0,Math.PI*2);x.arc(25,70,9,0,Math.PI*2);x.fill();
+// braço livre em posição de combate
+x.strokeStyle='#50575a';x.lineWidth=15;x.lineCap='round';
+x.beginPath();x.moveTo(42,44);x.lineTo(28,69);x.stroke();
+x.fillStyle='#25292b';x.beginPath();x.arc(26,72,9,0,Math.PI*2);x.fill();
+x.strokeStyle='#8b9295';x.lineWidth=4;x.beginPath();x.moveTo(34,57);x.lineTo(27,69);x.stroke();
 
-// martelo alinhado à colisão
+// braço da arma
+x.strokeStyle='#4b5154';x.lineWidth=15;
+x.beginPath();x.moveTo(89,43);x.lineTo(70,65);x.lineTo(20,73);x.stroke();
+x.fillStyle='#25292b';x.beginPath();x.arc(19,73,9,0,Math.PI*2);x.fill();
+x.strokeStyle='#8b9295';x.lineWidth=4;x.beginPath();x.moveTo(65,61);x.lineTo(54,70);x.stroke();
+
+// CLAVA GLADIADORA: cabo grosso + cabeça pesada + seis pontas
 x.save();x.translate(14,72);x.rotate(hammerAngle);
-x.strokeStyle='#202427';x.lineWidth=8;
-x.beginPath();x.moveTo(0,0);x.lineTo(-18,-145);x.stroke();
-x.fillStyle='#4f5558';x.fillRect(-50,-165,68,31);
-x.fillStyle='#b0b5b8';x.fillRect(-43,-158,54,6);
-x.fillStyle='#292d30';x.fillRect(-50,-165,8,31);x.restore();
+x.strokeStyle='#24282a';x.lineWidth=8;x.lineCap='round';
+x.beginPath();x.moveTo(0,0);x.lineTo(-18,-91);x.stroke();
+x.fillStyle='#6d7275';
+x.beginPath();x.ellipse(-22,-104,22,31,0,0,Math.PI*2);x.fill();
+x.fillStyle='#a8adaf';
+x.beginPath();x.ellipse(-27,-112,13,18,-.12,0,Math.PI*2);x.fill();
+x.strokeStyle='#303538';x.lineWidth=3;
+x.beginPath();x.moveTo(-37,-119);x.lineTo(-52,-129);
+x.moveTo(-43,-105);x.lineTo(-60,-105);
+x.moveTo(-38,-91);x.lineTo(-52,-78);
+x.moveTo(-20,-77);x.lineTo(-22,-59);
+x.moveTo(-5,-90);x.lineTo(9,-78);
+x.moveTo(-2,-108);x.lineTo(15,-103);
+x.stroke();
+x.fillStyle='#d2a24f';
+x.beginPath();
+x.arc(-52,-129,3,0,Math.PI*2);x.arc(-60,-105,3,0,Math.PI*2);x.arc(-52,-78,3,0,Math.PI*2);
+x.arc(-22,-59,3,0,Math.PI*2);x.arc(9,-78,3,0,Math.PI*2);x.arc(15,-103,3,0,Math.PI*2);x.fill();
+x.fillStyle='#c8cdd0';x.fillRect(-26,-132,8,56);
+x.restore();
 
 // barra de vida
 x.fillStyle='#111416';x.fillRect(4,-34,rw-8,9);
