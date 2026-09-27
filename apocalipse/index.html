@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Brasil em Apocalipse</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10131a;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
+#game{position:relative;width:100%;height:100%}canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;z-index:5;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.badge{background:#111c;border:1px solid #fff3;border-radius:12px;padding:8px 11px;font-weight:800;text-shadow:1px 1px #000}
+.controls{position:absolute;z-index:6;left:0;right:0;bottom:max(15px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 18px;pointer-events:none}.pad,.actions{display:flex;gap:12px;pointer-events:auto}.btn{width:76px;height:76px;border-radius:50%;border:2px solid #fff5;background:#202735e8;color:#fff;font-size:30px;font-weight:900;box-shadow:0 7px 0 #090c12;touch-action:none}.btn:active{transform:translateY(5px)}.fire{background:#9b3428;font-size:28px}.dash{background:#375a8f;font-size:25px}
+.message{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#253040dd,#07090ddd 70%)}.panel{max-width:390px;margin:18px;padding:28px 24px;text-align:center;background:#151a24f5;border:2px solid #a33f38;border-radius:25px;box-shadow:0 20px 60px #000b}.panel h1{margin:0 0 8px;font-size:38px}.panel p{color:#d6dbe5}.start{border:0;border-radius:15px;padding:14px 28px;background:linear-gradient(135deg,#d34b3d,#8c251f);color:#fff;font-weight:1000;font-size:18px}.small{font-size:12px;color:#9da7b8}.hidden{display:none!important}
+</style></head><body><main id="game"><canvas id="canvas"></canvas>
+<div class="hud"><div class="badge">🇧🇷 <span id="city">MACEIÓ</span> • FASE <span id="phase">1</span></div><div class="badge">❤️ <span id="life">100</span> &nbsp; 🪙 <span id="money">0</span> &nbsp; ☠️ <span id="kills">0</span></div></div>
+<div class="controls"><div class="pad"><button class="btn" id="left">◀</button><button class="btn" id="right">▶</button></div><div class="actions"><button class="btn dash" id="up">▲</button><button class="btn dash" id="down">▼</button><button class="btn fire" id="fire">🔫</button></div></div>
+<div id="message" class="message"><section class="panel"><h1>🇧🇷 BRASIL EM APOCALIPSE</h1><p>Fase 1 • Maceió</p><p class="small">Sobreviva, elimine os infectados e encontre o caminho para a próxima cidade.</p><button class="start" id="start">COMEÇAR</button></section></div>
+<script>
+(()=>{const c=document.getElementById('canvas'),x=c.getContext('2d'),msg=document.getElementById('message'),start=document.getElementById('start'),cityEl=document.getElementById('city'),phaseEl=document.getElementById('phase'),lifeEl=document.getElementById('life'),moneyEl=document.getElementById('money'),killsEl=document.getElementById('kills');
+let W=innerWidth,H=innerHeight,running=false,last=0,phase=1,life=100,money=0,kills=0,fireCd=0,spawnCd=0,wave=1,shots=[],zombies=[],particles=[],keys={l:false,r:false,u:false,d:false},player={x:180,y:0,r:18,speed:230,angle:0},map={w:3200,h:1800},boss=null,cam={x:0,y:0};
+const cities=['MACEIÓ','RECIFE','SALVADOR','SÃO PAULO','RIO DE JANEIRO','BRASÍLIA','MANAUS','BELO HORIZONTE','FORTALEZA','PALMEIRA DOS ÍNDIOS'];
+function resize(){W=innerWidth;H=innerHeight;c.width=W;c.height=H}addEventListener('resize',resize);resize();
+function reset(){phase=1;life=100;money=0;kills=0;wave=1;shots=[];zombies=[];particles=[];boss=null;spawnCd=0;player.x=260;player.y=map.h/2;player.angle=0;updateHud()}
+function updateHud(){cityEl.textContent=cities[phase-1];phaseEl.textContent=phase;lifeEl.textContent=Math.max(0,Math.round(life));moneyEl.textContent=money;killsEl.textContent=kills}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function shoot(){if(!running||fireCd>0)return;fireCd=.22;const dx=Math.cos(player.angle),dy=Math.sin(player.angle);shots.push({x:player.x+dx*23,y:player.y+dy*23,vx:dx*700,vy:dy*700,life:1});}
+function spawnZombie(){const side=Math.floor(Math.random()*4),pad=90;let zx,zy;if(side===0){zx=cam.x-Math.random()*120-pad;zy=cam.y+Math.random()*H}else if(side===1){zx=cam.x+W+Math.random()*120+pad;zy=cam.y+Math.random()*H}else if(side===2){zx=cam.x+Math.random()*W;zy=cam.y-pad-Math.random()*120}else{zx=cam.x+Math.random()*W;zy=cam.y+H+pad+Math.random()*120}zx=clamp(zx,30,map.w-30);zy=clamp(zy,30,map.h-30);zombies.push({x:zx,y:zy,r:15+Math.random()*5,hp:1+Math.floor(wave/4),speed:45+Math.random()*35+wave*2,hit:0});}
+function spawnBoss(){boss={x:map.w-380,y:map.h/2,r:58,hp:18+phase*5,maxHp:18+phase*5,speed:38,hit:0}}
+function hurt(n){life-=n;updateHud();if(life<=0){running=false;msg.classList.remove('hidden');msg.innerHTML='<section class="panel"><h1>VOCÊ FOI DERROTADO</h1><p>Você chegou à fase '+phase+' • '+cities[phase-1]+'</p><p>Abates: '+kills+' • Dinheiro: R$ '+money+'</p><button class="start" id="again">TENTAR NOVAMENTE</button></section>';document.getElementById('again').onclick=startGame}}
+function nextPhase(){if(phase<10){phase++;wave=1;zombies=[];shots=[];boss=null;life=Math.min(100,life+25);player.x=260;player.y=map.h/2;msg.classList.remove('hidden');msg.innerHTML='<section class="panel"><h1>🏙️ '+cities[phase-1]+'</h1><p>Você chegou a uma nova cidade.</p><p class="small">Fase '+phase+' de 10</p><button class="start" id="go">CONTINUAR</button></section>';running=false;document.getElementById('go').onclick=()=>{msg.classList.add('hidden');running=true;last=performance.now();requestAnimationFrame(loop)}}else{running=false;msg.classList.remove('hidden');msg.innerHTML='<section class="panel"><h1>🏆 BRASIL SOBREVIVEU!</h1><p>Você concluiu as 10 cidades.</p><p>Palmeira dos Índios foi a última resistência.</p><button class="start" id="again">JOGAR NOVAMENTE</button></section>';document.getElementById('again').onclick=startGame}}
+function startGame(){reset();msg.classList.add('hidden');running=true;last=performance.now();requestAnimationFrame(loop)}
+function update(dt){if(!running)return;fireCd=Math.max(0,fireCd-dt);spawnCd-=dt;
+let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:0)-(keys.u?1:0);if(dx||dy){const len=Math.hypot(dx,dy);dx/=len;dy/=len;player.x+=dx*player.speed*dt;player.y+=dy*player.speed*dt;player.angle=Math.atan2(dy,dx)}else if(mouseActive){player.angle=Math.atan2(mouseY-(player.y-cam.y),mouseX-(player.x-cam.x))}
+player.x=clamp(player.x,30,map.w-30);player.y=clamp(player.y,30,map.h-30);
+if(spawnCd<=0){spawnCd=Math.max(.28,1.15-wave*.045);const amount=wave>8?2:1;for(let i=0;i<amount;i++)spawnZombie()}
+for(const s of shots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;for(const z of zombies)if(!z.dead&&Math.hypot(s.x-z.x,s.y-z.y)<z.r+6){z.hp--;z.hit=.12;s.life=0;if(z.hp<=0){z.dead=true;kills++;money+=5+Math.floor(Math.random()*6);for(let i=0;i<7;i++)particles.push({x:z.x,y:z.y,vx:(Math.random()-.5)*100,vy:(Math.random()-.5)*100,life:.5});updateHud()}}if(boss&&!boss.dead&&Math.hypot(s.x-boss.x,s.y-boss.y)<boss.r+8){boss.hp--;boss.hit=.1;s.life=0;if(boss.hp<=0){boss.dead=true;money+=150;kills++;updateHud()}}}
+shots=shots.filter(s=>s.life>0&&s.x>0&&s.x<map.w&&s.y>0&&s.y<map.h);zombies=zombies.filter(z=>!z.dead);
+for(const z of zombies){const a=Math.atan2(player.y-z.y,player.x-z.x);z.x+=Math.cos(a)*z.speed*dt;z.y+=Math.sin(a)*z.speed*dt;if(Math.hypot(player.x-z.x,player.y-z.y)<player.r+z.r){hurt(12*dt);z.x-=Math.cos(a)*30*dt;z.y-=Math.sin(a)*30*dt}}
+if(wave>=10&&!boss)spawnBoss();
+if(boss&&!boss.dead){const a=Math.atan2(player.y-boss.y,player.x-boss.x);boss.x+=Math.cos(a)*boss.speed*dt;boss.y+=Math.sin(a)*boss.speed*dt;if(Math.hypot(player.x-boss.x,player.y-boss.y)<player.r+boss.r)hurt(24*dt);boss.hit=Math.max(0,boss.hit-dt)}
+if(boss&&boss.dead&&player.x>map.w-180)nextPhase();
+if(kills>=wave*12){wave++;updateHud()}
+cam.x=clamp(player.x-W*.42,0,map.w-W);cam.y=clamp(player.y-H*.48,0,map.h-H);
+for(const q of particles){q.x+=q.vx*dt;q.y+=q.vy*dt;q.life-=dt}particles=particles.filter(q=>q.life>0)}
+function draw(){x.clearRect(0,0,W,H);x.fillStyle='#252a2f';x.fillRect(0,0,W,H);x.save();x.translate(-cam.x,-cam.y);
+x.fillStyle=phase===10?'#554936':'#3a4145';x.fillRect(0,0,map.w,map.h);
+for(let gx=0;gx<map.w;gx+=220)for(let gy=0;gy<map.h;gy+=180){x.fillStyle=((gx/220+gy/180)%2)?'#343b3f':'#30373a';x.fillRect(gx+8,gy+8,204,164)}
+// ruas
+x.fillStyle='#555b5d';for(let gx=0;gx<map.w;gx+=520)x.fillRect(gx,0,74,map.h);for(let gy=0;gy<map.h;gy+=430)x.fillRect(0,gy,map.w,74);
+for(let gx=0;gx<map.w;gx+=520){x.fillStyle='#e6cf72';x.fillRect(gx+35,0,5,map.h)}for(let gy=0;gy<map.h;gy+=430){x.fillStyle='#e6cf72';x.fillRect(0,gy+35,map.w,5)}
+// prédios
+for(let bx=110;bx<map.w-100;bx+=330)for(let by=105;by<map.h-80;by+=290){x.fillStyle=phase===10?'#695b49':'#596269';x.fillRect(bx,by,190,145);x.fillStyle='#20272c';for(let wx=bx+18;wx<bx+175;wx+=38)for(let wy=by+18;wy<by+120;wy+=38)x.fillRect(wx,wy,18,18);x.fillStyle='#2b3033';x.fillRect(bx+72,by+96,48,49)}
+// player
+x.save();x.translate(player.x,player.y);x.rotate(player.angle);x.fillStyle='#d8ad85';x.beginPath();x.arc(0,0,18,0,Math.PI*2);x.fill();x.fillStyle='#4d7cc5';x.fillRect(-12,-13,24,26);x.fillStyle='#26364c';x.fillRect(6,-4,25,8);x.fillStyle='#b88a60';x.fillRect(24,-3,8,6);x.restore();
+// zombies
+for(const z of zombies){x.fillStyle=z.hit>0?'#fff':'#6e9b62';x.beginPath();x.arc(z.x,z.y,z.r,0,Math.PI*2);x.fill();x.fillStyle='#334a31';x.fillRect(z.x-z.r*.7,z.y+z.r*.25,z.r*1.4,8);x.fillStyle='#d84c4c';x.fillRect(z.x-7,z.y-5,4,4);x.fillRect(z.x+3,z.y-5,4,4)}
+if(boss&&!boss.dead){x.fillStyle=boss.hit>0?'#fff':'#7c3d38';x.beginPath();x.arc(boss.x,boss.y,boss.r,0,Math.PI*2);x.fill();x.fillStyle='#301c1b';x.fillRect(boss.x-28,boss.y-12,56,45);x.fillStyle='#eee';x.beginPath();x.moveTo(boss.x-28,boss.y-34);x.lineTo(boss.x-5,boss.y-58);x.lineTo(boss.x-2,boss.y-27);x.lineTo(boss.x+20,boss.y-55);x.lineTo(boss.x+28,boss.y-27);x.closePath();x.fill();x.fillStyle='#e2b84b';x.fillRect(boss.x-42,boss.y-78,84,9);x.fillStyle='#17191b';x.fillRect(boss.x-39,boss.y-75,78,3);x.fillStyle='#db3e49';x.fillRect(boss.x-39,boss.y-75,78*Math.max(0,boss.hp/boss.maxHp),3)}
+for(const s of shots){x.fillStyle='#ffd36a';x.beginPath();x.arc(s.x,s.y,5,0,Math.PI*2);x.fill()}for(const q of particles){x.globalAlpha=Math.max(0,q.life*2);x.fillStyle='#b8e28e';x.fillRect(q.x,q.y,4,4);x.globalAlpha=1}
+// destination
+x.fillStyle='#d6b84f';x.fillRect(map.w-120,map.h/2-70,15,140);x.fillStyle='#d63d46';x.beginPath();x.moveTo(map.w-105,map.h/2-65);x.lineTo(map.w-35,map.h/2-42);x.lineTo(map.w-105,map.h/2-18);x.closePath();x.fill();x.restore();
+if(boss&&!boss.dead){x.fillStyle='#111d';x.fillRect(W/2-150,72,300,24);x.fillStyle='#c63d47';x.fillRect(W/2-146,76,292*Math.max(0,boss.hp/boss.maxHp),16);x.fillStyle='#fff';x.font='800 13px system-ui';x.textAlign='center';x.fillText('CHEFE • '+cities[phase-1],W/2,90);x.textAlign='start'}}
+function loop(t){if(!running)return;const dt=Math.min(.04,Math.max(0,(t-last)/1000));last=t;update(dt);draw();requestAnimationFrame(loop)}
+function bind(el,k){el.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>el.addEventListener(v,e=>{e.preventDefault();keys[k]=false}))}
+bind(document.getElementById('left'),'l');bind(document.getElementById('right'),'r');bind(document.getElementById('up'),'u');bind(document.getElementById('down'),'d');document.getElementById('fire').addEventListener('pointerdown',e=>{e.preventDefault();shoot()});
+let mouseActive=false,mouseX=0,mouseY=0;c.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){mouseActive=true;mouseX=e.clientX;mouseY=e.clientY}});c.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){mouseActive=true;mouseX=e.clientX;mouseY=e.clientY;shoot()}});
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.l=true;if(e.key==='ArrowRight'||e.key==='d')keys.r=true;if(e.key==='ArrowUp'||e.key==='w')keys.u=true;if(e.key==='ArrowDown'||e.key==='s')keys.d=true;if(e.key===' '){e.preventDefault();shoot()}});addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.l=false;if(e.key==='ArrowRight'||e.key==='d')keys.r=false;if(e.key==='ArrowUp'||e.key==='w')keys.u=false;if(e.key==='ArrowDown'||e.key==='s')keys.d=false});
+start.onclick=startGame;updateHud();draw();
+})();</script></body></html>
