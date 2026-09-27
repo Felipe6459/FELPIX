@@ -20,7 +20,7 @@ const keys={l:0,r:0,u:0,d:0};const p={x:0,z:260,dir:0,speed:210};const world={mi
 function resize(){W=innerWidth;H=innerHeight;c.width=W;c.height=H}addEventListener('resize',resize);resize();
 function spawn(){zombies=[];for(let i=0;i<8;i++){const side=i%2?-1:1;zombies.push({x:side*(300+i*75),z:-180-i*95,hp:2,hit:0,speed:24+i*2})}}
 function start(){running=true;menu.style.display='none';hp=100;kills=0;shots=[];p.x=0;p.z=260;p.dir=0;spawn();hpEl.textContent=100;killsEl.textContent=0;last=performance.now();requestAnimationFrame(loop)}
-function project(wx,wz){const camX=p.x,camZ=p.z+420;const dx=wx-camX,dz=wz-camZ;const depth=dz;const side=dx;if(depth<35)return null;const scale=Math.min(W,H)*1.0/depth;return{x:W/2+side*scale,y:H*.62-depth*.045*scale,s:scale,depth}}
+function project(wx,wz){const camX=p.x,camZ=p.z+420;const dx=wx-camX,dz=wz-camZ;const depth=dz;const side=dx;if(depth<=35)return null;const scale=Math.min(W,H)/Math.max(depth,35);return{x:W/2+side*scale,y:H*.60+(1-depth/900)*H*.18,s:Math.max(.15,Math.min(2.5,scale)),depth}}
 function rectWorld(wx,wz,w,d,fill){const o=project(wx,wz);if(!o)return;const ww=o.s*w,hh=o.s*d;ctx.fillStyle=fill;ctx.fillRect(o.x-ww/2,o.y-hh,ww,hh)}
 function draw(){ctx.clearRect(0,0,W,H);
 const sky=ctx.createLinearGradient(0,0,0,H*.58);sky.addColorStop(0,'#182f3c');sky.addColorStop(1,'#91a4a8');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.58);
