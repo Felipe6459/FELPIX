@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>FELPIX • Cobrinha</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07100b;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
+#app{width:100%;height:100%;display:grid;grid-template-rows:auto 1fr auto;max-width:760px;margin:auto;padding:12px;gap:10px}
+.hud{display:flex;justify-content:space-between;gap:8px;font-weight:900}.box{background:#101d15;border:1px solid #6ee7a033;border-radius:14px;padding:9px 12px}
+#boardWrap{min-height:0;display:grid;place-items:center}
+canvas{display:block;border:2px solid #4ade8066;border-radius:18px;background:#0b160f;box-shadow:0 12px 40px #0008;image-rendering:auto}
+#controls{display:grid;grid-template-columns:repeat(3,72px);grid-template-rows:repeat(2,60px);gap:7px;justify-content:center}
+.btn{border:1px solid #ffffff2b;border-radius:15px;background:#17261c;color:#fff;font-size:27px;font-weight:900;box-shadow:0 4px 0 #050906;touch-action:none}
+.btn:active{transform:translateY(3px);filter:brightness(1.25)}
+.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
+.screen{position:absolute;inset:0;display:grid;place-items:center;background:#020704dd;z-index:5;padding:20px}
+.panel{width:min(400px,100%);text-align:center;padding:28px 22px;border:1px solid #4ade8066;border-radius:24px;background:linear-gradient(160deg,#132218f7,#08100bf7);box-shadow:0 20px 60px #000b}
+.panel h1{font-size:42px;margin:0 0 6px}.panel p{color:#bfd1c4;margin:8px 0 20px}.start{border:0;border-radius:15px;padding:14px 26px;background:linear-gradient(135deg,#4ade80,#15803d);color:#041007;font-size:18px;font-weight:1000}
+#tip{font-size:12px;color:#93a69a;text-align:center}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="hud"><div class="box">🐍 FELPIX • COBRINHA</div><div class="box">⭐ <span id="score">0</span> &nbsp;🏆 <span id="best">0</span></div></div>
+  <div id="boardWrap"><canvas id="board"></canvas></div>
+  <div>
+    <div id="controls">
+      <button class="btn up" data-dir="up">▲</button>
+      <button class="btn left" data-dir="left">◀</button>
+      <button class="btn down" data-dir="down">▼</button>
+      <button class="btn right" data-dir="right">▶</button>
+    </div>
+    <div id="tip">Toque nos botões ou use as setas do teclado.</div>
+  </div>
+</main>
+<div class="screen" id="screen"><section class="panel"><h1>🐍 COBRINHA</h1><p>Coma as frutas, cresça e tente bater seu recorde.</p><button class="start" id="start">JOGAR</button></section></div>
+<script>
+(()=> {
+  const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
+  const screen=document.getElementById('screen'),start=document.getElementById('start');
+  const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best');
+  const N=20; let cell=20,score=0,best=Number(localStorage.getItem('felpixSnakeBest')||0);
+  let snake=[],food={x:10,y:10},dir={x:1,y:0},next={x:1,y:0},running=false,timer=0,last=0,raf=0;
+  bestEl.textContent=best;
+  function resize(){
+    const max=Math.min(window.innerWidth-24,window.innerHeight-190,620);
+    cell=Math.max(12,Math.floor(max/N));
+    canvas.width=cell*N;canvas.height=cell*N;
+    draw();
+  }
+  addEventListener('resize',resize);
+  function reset(){
+    snake=[{x:9,y:10},{x:8,y:10},{x:7,y:10},{x:6,y:10}];
+    dir={x:1,y:0};next={x:1,y:0};score=0;scoreEl.textContent=0;placeFood();
+  }
+  function placeFood(){
+    let ok=false;
+    while(!ok){
+      food={x:Math.floor(Math.random()*N),y:Math.floor(Math.random()*N)};
+      ok=!snake.some(s=>s.x===food.x&&s.y===food.y);
+    }
+  }
+  function setDir(d){
+    const map={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+    const v=map[d]; if(!v||!running)return;
+    if(v.x===-dir.x&&v.y===-dir.y)return;
+    next=v;
+  }
+  function speed(){return Math.max(62,128-score*2)}
+  function step(){
+    dir=next;
+    const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+    if(head.x<0||head.x>=N||head.y<0||head.y>=N){gameOver();return}
+    const eating=head.x===food.x&&head.y===food.y;
+    const body=eating?snake:snake.slice(0,-1);
+    if(body.some(s=>s.x===head.x&&s.y===head.y)){gameOver();return}
+    snake.unshift(head);
+    if(eating){
+      score++;scoreEl.textContent=score;
+      if(score>best){best=score;bestEl.textContent=best;localStorage.setItem('felpixSnakeBest',String(best))}
+      placeFood();
+    }else snake.pop();
+  }
+  function gameOver(){
+    running=false;
+    screen.classList.remove('hidden');
+    screen.innerHTML='<section class="panel"><h1>💥 FIM!</h1><p>Você fez <b>'+score+'</b> ponto'+(score===1?'':'s')+'.<br>Recorde: <b>'+best+'</b>.</p><button class="start" id="again">JOGAR NOVAMENTE</button></section>';
+    document.getElementById('again').addEventListener('click',startGame);
+  }
+  function startGame(){
+    reset();running=true;screen.classList.add('hidden');last=performance.now();timer=0;
+    if(!raf)raf=requestAnimationFrame(loop);
+  }
+  function loop(t){
+    raf=0;if(!running)return;
+    const dt=Math.min(100,t-last);last=t;timer+=dt;
+    if(timer>=speed()){timer=0;step()}
+    draw();raf=requestAnimationFrame(loop);
+  }
+  function draw(){
+    const w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='#08130c';ctx.fillRect(0,0,w,h);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      ctx.fillStyle=(x+y)%2?'#0b180f':'#0d1b11';
+      ctx.fillRect(x*cell,y*cell,cell,cell);
+    }
+    const fx=food.x*cell+cell/2,fy=food.y*cell+cell/2;
+    ctx.fillStyle='#ef4444';ctx.beginPath();ctx.arc(fx,fy,cell*.32,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fca5a5';ctx.beginPath();ctx.arc(fx-cell*.09,fy-cell*.1,cell*.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#4ade80';ctx.fillRect(food.x*cell+cell*.44,food.y*cell+cell*.08,cell*.12,cell*.22);
+    snake.forEach((s,i)=>{
+      const pad=i===0?1.5:2.5;
+      const px=s.x*cell+pad,py=s.y*cell+pad,sz=cell-pad*2;
+      ctx.fillStyle=i===0?'#86efac':'#22c55e';
+      ctx.beginPath();ctx.roundRect(px,py,sz,sz,Math.max(3,cell*.18));ctx.fill();
+      if(i===0){
+        ctx.fillStyle='#052e16';
+        let ex=px+sz*.68,ey=py+sz*.3;
+        if(dir.x<0){ex=px+sz*.3} if(dir.y<0){ex=px+sz*.3;ey=py+sz*.3}
+        if(dir.y>0){ex=px+sz*.7;ey=py+sz*.7}
+        ctx.beginPath();ctx.arc(ex,ey,Math.max(2,cell*.075),0,Math.PI*2);ctx.fill();
+      }
+    });
+  }
+  document.querySelectorAll('[data-dir]').forEach(b=>{
+    b.addEventListener('pointerdown',e=>{e.preventDefault();setDir(b.dataset.dir)});
+  });
+  addEventListener('keydown',e=>{
+    const k={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right'}[e.key];
+    if(k){e.preventDefault();setDir(k)}
+    if(e.key===' '&&!running)startGame();
+  });
+  start.addEventListener('click',startGame);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){last=performance.now()}else if(running&&!raf){last=performance.now();raf=requestAnimationFrame(loop)}});
+  resize();reset();draw();
+})();
+</script>
+</body>
+</html>
