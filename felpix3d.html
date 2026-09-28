@@ -190,7 +190,7 @@ function init(){
   clock=new THREE.Clock();
   scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
   const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
-  createWorld();createPlayer();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
+  createPlayer();createWorld();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
   }catch(e){showFatal(e);throw e}
 }
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
