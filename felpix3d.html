@@ -152,11 +152,8 @@ function addGate(z){
 function createWorld(){
   // Fase linear: um único caminho para frente, com saltos, blocos, canos,
   // inimigos e plataformas no estilo clássico de aventura de plataforma.
-  // Área inicial segura. Depois dela, os vãos obrigam o jogador a saltar.\n  addPlatform(0,-.35,5,15,.7,10,0x5aa447);
-  for(let z=7;z>-180;z-=4){
-    const s=addBox(0,-.02,z,14.5,.05,1.5,(Math.abs(Math.round(z))%8===0)?0x70bf55:0x62ad4d);
-    s.material.roughness=1;
-  }
+  // Área inicial segura. Depois dela, os vãos obrigam o jogador a saltar.
+  addPlatform(0,-.35,5,15,.7,10,0x5aa447);
 
   // Plataformas da rota principal: sempre em linha reta no eixo Z.
   const route=[
@@ -275,7 +272,7 @@ function respawn(){
   let y=1.25;
   const p=platforms.find(p=>checkpointZ>=p.z1-.2&&checkpointZ<=p.z2+.2&&0>p.x1-.45&&0<p.x2+.45);
   if(p)y=p.top+1.25;
-  player.position.set(0,y,checkpointZ);velocity.set(0,0,0);shake=.18;
+  player.position.set(0,y,checkpointZ);velocity.set(0,0,0);grounded=true;shake=.18;
 }
 function loseLife(){
   lives--;livesEl.textContent=lives;beep(120,.15,'sawtooth',.03);shake=.45;
@@ -302,14 +299,23 @@ function updateMovement(dt){
   player.position.x=THREE.MathUtils.clamp(player.position.x,world.minX,world.maxX);player.position.z=THREE.MathUtils.clamp(player.position.z,world.minZ,world.maxZ);
   grounded=false;
   if(velocity.y<=0){
+    const newBottom=player.position.y-1.25;
+    const oldBottom=oldY-1.25;
+    let landing=null;
     for(const p of platforms){
-      if(player.position.x>p.x1-.45&&player.position.x<p.x2+.45&&player.position.z>p.z1-.45&&player.position.z<p.z2+.45){
-        const bottom=player.position.y-1.25;if(bottom<=p.top+.2&&bottom>=p.top-.75&&oldY-1.25>=p.top-.8){player.position.y=p.top+1.25;velocity.y=0;grounded=true;break}
+      const insideX=player.position.x>p.x1-.45&&player.position.x<p.x2+.45;
+      const insideZ=player.position.z>p.z1-.45&&player.position.z<p.z2+.45;
+      if(insideX&&insideZ&&oldBottom>=p.top-.08&&newBottom<=p.top+.22){
+        if(!landing||p.top>landing.top)landing=p;
       }
     }
-
+    if(landing){
+      player.position.y=landing.top+1.25;
+      velocity.y=0;
+      grounded=true;
+    }
   }
-  if(player.position.y<-3){loseLife();return}
+  if(player.position.y<-2.2){loseLife();return false}
   if(moveDir.lengthSq()>.01){player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,Math.atan2(moveDir.x,moveDir.z),Math.min(1,dt*12));}
   const runningAnim=grounded&&sp>1;
   body.position.y=runningAnim?Math.sin(performance.now()*.018*sp)*.045:THREE.MathUtils.lerp(body.position.y,0,dt*8);
@@ -368,7 +374,7 @@ function restart(){
 function loop(){
   try{
     const dt=Math.min(.033,clock.getDelta());
-    if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
+    if(running){const alive=updateMovement(dt);if(alive!==false){updateWorld(dt)}updateCamera(dt)}
     renderer.render(scene,camera);
   }catch(e){running=false;showFatal(e)}
 }
