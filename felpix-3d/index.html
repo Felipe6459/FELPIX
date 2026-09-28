@@ -183,7 +183,7 @@ function createWorld(){
 function init(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x72cfff);scene.fog=new THREE.Fog(0x77cfff,25,95);
   camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);camera.position.set(0,6.5,13);
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(1.7,devicePixelRatio||1));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+  renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;
   clock=new THREE.Clock();
   scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
   const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
@@ -306,7 +306,7 @@ function loop(){
   if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
   renderer.render(scene,camera);
 }
-function startGame(){overlay.classList.add('hidden');running=true;clock.start();beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
+function startGame(){overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
 init();
 </script>
 </body>
