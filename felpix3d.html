@@ -152,7 +152,7 @@ function addGate(z){
 function createWorld(){
   // Fase linear: um único caminho para frente, com saltos, blocos, canos,
   // inimigos e plataformas no estilo clássico de aventura de plataforma.
-  addBox(0,-.55,-84,15,1,188,0x5aa447);
+  // Área inicial: depois dela não existe chão contínuo. O jogador precisa saltar entre as plataformas.\n  addPlatform(0,-.35,5,15,.7,10,0x5aa447);
   for(let z=7;z>-180;z-=4){
     const s=addBox(0,-.02,z,14.5,.05,1.5,(Math.abs(Math.round(z))%8===0)?0x70bf55:0x62ad4d);
     s.material.roughness=1;
@@ -267,12 +267,15 @@ function bindControls(){
 }
 function doJump(){
   if(!running)return;
-  if(grounded){velocity.y=9.2;grounded=false;beep(430,.09,'square',.025)}
+  if(grounded){velocity.y=10.8;grounded=false;beep(430,.09,'square',.025)}
   else if(powerTime>0&&velocity.y<1.5){velocity.y=7.2;beep(620,.06,'sine',.02)}
 }
 
 function respawn(){
-  player.position.set(0,1.25,checkpointZ);velocity.set(0,0,0);shake=.18;
+  let y=1.25;
+  const p=platforms.find(p=>checkpointZ>=p.z1-.2&&checkpointZ<=p.z2+.2&&0>p.x1-.45&&0<p.x2+.45);
+  if(p)y=p.top+1.25;
+  player.position.set(0,y,checkpointZ);velocity.set(0,0,0);shake=.18;
 }
 function loseLife(){
   lives--;livesEl.textContent=lives;beep(120,.15,'sawtooth',.03);shake=.45;
@@ -280,7 +283,7 @@ function loseLife(){
   respawn();showToast('❤️ Vida perdida — continue!');
 }
 function useCheckpoint(){
-  for(const cp of checkpoints){if(!cp.used&&player.position.z<cp.z+1){cp.used=true;checkpointZ=cp.z+3;score+=100;scoreEl.textContent=score;showToast('🚩 Ponto de controle ativado!');beep(760,.12,'triangle',.03)}}
+  for(const cp of checkpoints){if(!cp.used&&player.position.z<cp.z+1){cp.used=true;checkpointZ=cp.z;score+=100;scoreEl.textContent=score;showToast('🚩 Ponto de controle ativado!');beep(760,.12,'triangle',.03)}}
 }
 
 function updateMovement(dt){
@@ -304,7 +307,7 @@ function updateMovement(dt){
         const bottom=player.position.y-1.25;if(bottom<=p.top+.2&&bottom>=p.top-.75&&oldY-1.25>=p.top-.8){player.position.y=p.top+1.25;velocity.y=0;grounded=true;break}
       }
     }
-    const bottom=player.position.y-1.25;if(!grounded&&player.position.x>-13.5&&player.position.x<13.5&&player.position.z>-89&&player.position.z<10&&bottom<=.12&&bottom>=-.75&&oldY-1.25>=-.8){player.position.y=1.25;velocity.y=0;grounded=true}
+
   }
   if(player.position.y<-6){loseLife();return}
   if(moveDir.lengthSq()>.01){player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,Math.atan2(moveDir.x,moveDir.z),Math.min(1,dt*12));}
