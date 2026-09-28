@@ -3,395 +3,307 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>FELPIX 3D — Protótipo</title>
+<title>FELPIX 3D — A Ilha dos Cristais</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#09111f;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
-#game{position:relative;width:100%;height:100%}
-canvas{display:block;width:100%;height:100%}
-.hud{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-.badge{padding:9px 12px;border:1px solid #ffffff35;border-radius:14px;background:#08111dcc;backdrop-filter:blur(8px);font-weight:900;text-shadow:0 2px 3px #000;box-shadow:0 8px 24px #0005}
-.badge b{color:#d9b8ff}
-#hint{position:absolute;z-index:5;top:62px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:99px;background:#08111db8;border:1px solid #ffffff22;font-size:12px;font-weight:800;white-space:nowrap}
-.overlay{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,#24174ddd,#07101de8 70%)}
-.panel{width:min(92%,430px);padding:30px 24px;text-align:center;border:1px solid #b58aff66;border-radius:28px;background:linear-gradient(160deg,#20263af5,#0c1321f5);box-shadow:0 25px 80px #000b}
-.panel h1{margin:0 0 7px;font-size:48px;letter-spacing:-2px}
-.panel h2{margin:0 0 10px;color:#d7c4ff}
-.panel p{margin:8px 0 20px;color:#cbd2e2;line-height:1.45}
-.start{border:0;border-radius:17px;padding:15px 25px;background:linear-gradient(135deg,#9d6cff,#5b35c5);color:#fff;font-weight:1000;font-size:18px;box-shadow:0 8px 20px #5b35c555}
-.small{margin-top:15px!important;font-size:12px;color:#8f9bb0!important}
-.controls{position:absolute;z-index:8;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 16px;pointer-events:none}
-.pad{display:grid;grid-template-columns:repeat(3,78px);grid-template-rows:78px 78px 78px;gap:7px;align-items:center}
-.btn{pointer-events:auto;width:78px;height:78px;border:2px solid #ffffff40;border-radius:50%;background:radial-gradient(circle at 35% 25%,#5b667a,#1b2637 65%,#0b111c);color:#fff;font-size:30px;font-weight:1000;box-shadow:0 7px 0 #050a12,0 12px 22px #0008;touch-action:none}
-.jump .btn{width:100px;height:100px;background:radial-gradient(circle at 35% 25%,#b28cff,#5b35c5 65%,#2d176e);font-size:38px}
-.action{display:none}
-.btn:active{transform:translateY(5px) scale(.96)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07101d;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
+#game{position:relative;width:100%;height:100%}canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;flex-wrap:wrap}
+.badge{padding:8px 12px;border:1px solid #ffffff35;border-radius:15px;background:#07101dcc;backdrop-filter:blur(8px);font-weight:900;text-shadow:0 2px 3px #000;box-shadow:0 8px 24px #0005}
+.badge b{color:#d8b9ff}.progress{position:absolute;z-index:5;top:61px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:99px;background:#07101db8;border:1px solid #ffffff25;font-size:12px;font-weight:900;white-space:nowrap}
+#power{color:#ffe36a}
+.overlay{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,#321a58e8,#06101ce8 72%)}
+.panel{width:min(92%,470px);padding:30px 24px;text-align:center;border:1px solid #b58aff66;border-radius:30px;background:linear-gradient(160deg,#20263af7,#0b1322f7);box-shadow:0 25px 80px #000b}
+.panel h1{margin:0 0 4px;font-size:50px;letter-spacing:-2px}.panel h2{margin:0 0 10px;color:#e0d1ff}.panel p{margin:9px 0 19px;color:#cbd2e2;line-height:1.45}
+.start{border:0;border-radius:18px;padding:15px 25px;background:linear-gradient(135deg,#a06cff,#5b35c5);color:#fff;font-weight:1000;font-size:18px;box-shadow:0 9px 22px #5b35c566}
+.small{margin-top:14px!important;font-size:12px;color:#8f9bb0!important}
 .hidden{display:none!important}
-#debug{position:absolute;z-index:6;left:12px;bottom:12px;font-size:11px;color:#ffffff80;pointer-events:none}
-@media(max-width:520px){.badge{font-size:12px;padding:8px 10px}.panel h1{font-size:40px}.pad{grid-template-columns:repeat(3,64px);grid-template-rows:64px 64px 64px;gap:6px}.btn{width:68px;height:68px}.jump .btn{width:96px;height:96px}}
+.controls{position:absolute;z-index:8;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 18px;pointer-events:none}
+.joystick{position:relative;width:154px;height:154px;border-radius:50%;background:#07101dcc;border:2px solid #ffffff30;box-shadow:0 14px 32px #0008;pointer-events:auto;touch-action:none}
+.joystick:after{content:"";position:absolute;inset:20px;border:1px dashed #ffffff18;border-radius:50%}
+.stick{position:absolute;left:50%;top:50%;width:74px;height:74px;margin:-37px 0 0 -37px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#b99aff,#6a3bd0 64%,#2e176c);border:2px solid #ffffff55;box-shadow:0 8px 0 #050a12,0 14px 24px #0008;touch-action:none;z-index:2}
+.jump .btn{pointer-events:auto;width:112px;height:112px;border:2px solid #ffffff48;border-radius:50%;background:radial-gradient(circle at 35% 25%,#b99aff,#6a3bd0 64%,#2e176c);color:#fff;font-size:42px;font-weight:1000;box-shadow:0 8px 0 #050a12,0 14px 28px #0008;touch-action:none}
+.jump .label{display:block;text-align:center;margin-top:6px;font-size:11px;font-weight:900;color:#fff9;text-shadow:0 2px 4px #000}
+.btn:active{transform:translateY(5px) scale(.96)}
+#toast{position:absolute;z-index:9;left:50%;top:112px;transform:translateX(-50%) translateY(-8px);padding:10px 16px;border-radius:99px;background:#17122ad9;border:1px solid #ffffff35;font-weight:1000;opacity:0;transition:.2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#powerBar{position:absolute;z-index:6;left:50%;top:88px;transform:translateX(-50%);width:min(230px,55%);height:7px;border-radius:99px;background:#0008;overflow:hidden;opacity:0}
+#powerFill{height:100%;width:100%;background:#ffd94a}
+@media(max-width:520px){.badge{font-size:12px;padding:8px 10px}.panel h1{font-size:40px}.joystick{width:146px;height:146px}.stick{width:70px;height:70px;margin:-35px 0 0 -35px}.jump .btn{width:104px;height:104px}.progress{top:58px;font-size:11px}}
 </style>
 </head>
 <body>
 <main id="game">
 <canvas id="canvas"></canvas>
 <div class="hud">
-  <div class="badge">FELPIX <b>3D</b> • MUNDO 1</div>
-  <div class="badge">🪙 <span id="coins">0</span> &nbsp;❤️ <span id="lives">3</span></div>
+  <div class="badge">FELPIX <b>3D</b> • ILHA DOS CRISTAIS</div>
+  <div class="badge">💎 <span id="coins">0</span>/12 &nbsp; ❤️ <span id="lives">3</span> &nbsp; ⭐ <span id="score">0</span></div>
 </div>
-<div id="hint">WASD / setas para mover • ESPAÇO para pular</div>
-<div id="debug">PROTÓTIPO 3D • mundo de plataforma</div>
+<div id="progress" class="progress">Encontre os cristais e abra o portão</div>
+<div id="powerBar"><div id="powerFill"></div></div>
+<div id="toast"></div>
 <div id="overlay" class="overlay">
   <section class="panel">
     <h1>FELPIX 3D</h1>
-    <h2>O primeiro mundo</h2>
-    <p>Um mundo 3D colorido de plataforma: corra, pule, pise nos inimigos, pegue moedas e chegue à bandeira.</p>
-    <button id="start" class="start" type="button">🎮 INICIAR AVENTURA</button>
-    <p class="small">Protótipo independente — o FELPIX 2D continua intacto.</p>
+    <h2>🏝️ A Ilha dos Cristais</h2>
+    <p>Corra, pule, explore atalhos, esmague criaturas, pegue os 12 cristais e abra o portão no fim da ilha.</p>
+    <button id="start" class="start" type="button">🎮 COMEÇAR A AVENTURA</button>
+    <p class="small">Protótipo 3D independente. O FELPIX 2D e a Cobrinha continuam intactos.</p>
   </section>
 </div>
 <div class="controls">
-  <div class="pad" aria-label="Controles de movimento">
-    <span></span><button id="forward" class="btn" type="button" aria-label="Andar para frente">▲</button><span></span>
-    <button id="left" class="btn" type="button" aria-label="Andar para esquerda">◀</button>
-    <span></span>
-    <button id="right" class="btn" type="button" aria-label="Andar para direita">▶</button>
-    <span></span><button id="back" class="btn" type="button" aria-label="Andar para trás">▼</button><span></span>
-  </div>
-  <div class="jump"><button id="jump" class="btn" type="button" aria-label="Pular">⤴</button></div>
+  <div id="joystick" class="joystick" aria-label="Analógico virtual"><div id="stick" class="stick"></div></div>
+  <div class="jump"><button id="jump" class="btn" type="button" aria-label="Pular">⤴</button><span class="label">PULAR</span></div>
 </div>
 </main>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 
-const canvas=document.getElementById('canvas');
-const overlay=document.getElementById('overlay');
-const startBtn=document.getElementById('start');
-const coinsEl=document.getElementById('coins');
-const livesEl=document.getElementById('lives');
+const canvas=document.getElementById('canvas'),overlay=document.getElementById('overlay');
+const startBtn=document.getElementById('start'),coinsEl=document.getElementById('coins'),livesEl=document.getElementById('lives'),scoreEl=document.getElementById('score');
+const progressEl=document.getElementById('progress'),toastEl=document.getElementById('toast'),powerBar=document.getElementById('powerBar'),powerFill=document.getElementById('powerFill');
 
-let scene,camera,renderer,clock;
-let player,playerBody,playerShadow;
-let running=false,coins=0,lives=3;
-let velocity=new THREE.Vector3();
-let grounded=false,jumpLock=false;
+let scene,camera,renderer,clock,audioCtx;
+let player,body,shadow,velocity=new THREE.Vector3(),grounded=false;
+let running=false,coins=0,lives=3,score=0,powerTime=0,checkpointZ=6;
+let toastTimer=0,shake=0;
 const keys={left:false,right:false,forward:false,back:false};
-const platforms=[],coinItems=[],enemies=[],decor=[];
-const world={minX:-13,maxX:13,minZ:-42,maxZ:8};
+const stickInput={x:0,y:0};
+const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];
+const world={minX:-14,maxX:14,minZ:-88,maxZ:10};
+const up=new THREE.Vector3(0,1,0),camForward=new THREE.Vector3(),camRight=new THREE.Vector3(),moveDir=new THREE.Vector3();
 
-function mat(color,roughness=.8){return new THREE.MeshStandardMaterial({color,roughness,metalness:.05})}
-function box(w,h,d,color){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));return m}
-function addBox(x,y,z,w,h,d,color){const m=box(w,h,d,color);m.position.set(x,y,z);scene.add(m);return m}
+function material(c,rough=.75,metal=.05){return new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal})}
+function box(w,h,d,c){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(c))}
+function addBox(x,y,z,w,h,d,c){const m=box(w,h,d,c);m.position.set(x,y,z);scene.add(m);return m}
+function beep(freq=520,dur=.06,type='sine',gain=.035){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=gain;o.connect(g).connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur)}catch{}}
+function showToast(t){toastEl.textContent=t;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1500)}
 
 function createPlayer(){
-  player=new THREE.Group();
-  player.position.set(0,1.25,5);
-  playerBody=new THREE.Group();
-  player.add(playerBody);
-
-  const body=box(.95,1.05,.72,0x7046c7);body.position.y=.05;playerBody.add(body);
-  const belt=box(1.0,.14,.78,0xf0d04f);belt.position.y=-.42;playerBody.add(belt);
-
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.43,20,14),mat(0xf2c49b));head.scale.set(1,.96,.92);head.position.y=.78;playerBody.add(head);
-  const cap=box(.98,.20,.83,0x5b35b5);cap.position.y=1.10;playerBody.add(cap);
-  const brim=box(1.08,.09,.35,0x9b6cff);brim.position.set(0,1.02,.38);playerBody.add(brim);
-
-  const eyeMat=mat(0xffffff);
+  player=new THREE.Group();player.position.set(0,1.25,6);body=new THREE.Group();player.add(body);
+  const torso=box(1.0,1.05,.72,0x7046c7);torso.position.y=.02;body.add(torso);
+  const belt=box(1.06,.14,.78,0xf0d04f);belt.position.y=-.42;body.add(belt);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.44,20,14),material(0xf2c49b));head.position.y=.78;body.add(head);
+  const cap=box(1.0,.2,.84,0x5b35b5);cap.position.y=1.11;body.add(cap);
+  const brim=box(1.1,.09,.36,0x9b6cff);brim.position.set(0,1.02,.39);body.add(brim);
   for(const s of [-1,1]){
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),eyeMat);eye.position.set(s*.16,.82,.39);playerBody.add(eye);
-    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.028,10,8),mat(0x17131e));pupil.position.set(s*.16,.82,.45);playerBody.add(pupil);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.067,12,8),material(0xffffff));eye.position.set(s*.16,.83,.4);body.add(eye);
+    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.029,10,8),material(0x17131e));pupil.position.set(s*.16,.83,.455);body.add(pupil);
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.11,.43,6,10),material(0xf2c49b));arm.position.set(s*.59,.03,0);arm.rotation.z=s*.25;arm.name='arm'+s;body.add(arm);
+    const boot=new THREE.Mesh(new THREE.BoxGeometry(.35,.25,.56),material(0x34205e));boot.position.set(s*.25,-.58,.1);boot.name='boot'+s;body.add(boot);
   }
+  shadow=new THREE.Mesh(new THREE.CircleGeometry(.64,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));
+  shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.22;player.add(shadow);scene.add(player);
+}
 
-  const armMat=mat(0xf2c49b);
+function addPlatform(x,y,z,w,h,d,c){
+  const m=addBox(x,y,z,w,h,d,c);m.userData.platform=true;
+  platforms.push({mesh:m,top:y+h/2,x1:x-w/2,x2:x+w/2,z1:z-d/2,z2:z+d/2});
+}
+function addCrystal(x,y,z,kind='normal'){
+  const g=new THREE.Group();
+  const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.38,.1),material(kind==='big'?0xffd84a:0x7ff3ff,.25,.65));
+  gem.rotation.y=.3;g.add(gem);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.55,.035,8,24),material(kind==='big'?0xffd84a:0x9a6cff,.2,.6));ring.rotation.x=Math.PI/2;g.add(ring);
+  g.position.set(x,y,z);scene.add(g);crystals.push({group:g,got:false,kind});return g;
+}
+function createEnemy(x,z,type='walker'){
+  const g=new THREE.Group();g.position.set(x,.58,z);
+  const c=type==='charger'?0xe05a6e:0x8f475c;
+  const bodyMesh=new THREE.Mesh(new THREE.SphereGeometry(.54,16,12),material(c));bodyMesh.scale.y=.85;g.add(bodyMesh);
   for(const s of [-1,1]){
-    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.10,.45,6,10),armMat);
-    arm.position.set(s*.58,.02,0);arm.rotation.z=s*.25;arm.name='arm'+s;playerBody.add(arm);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),material(0xffffff));eye.position.set(s*.18,.13,.44);g.add(eye);
+    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),material(0x111111));pupil.position.set(s*.18,.13,.53);g.add(pupil);
+    const foot=new THREE.Mesh(new THREE.BoxGeometry(.25,.18,.36),material(0x4a2232));foot.position.set(s*.22,-.48,.05);g.add(foot);
   }
-  for(const s of [-1,1]){
-    const boot=new THREE.Mesh(new THREE.BoxGeometry(.34,.25,.55),mat(0x34205e));boot.position.set(s*.25,-.58,.08);playerBody.add(boot);
+  scene.add(g);enemies.push({group:g,startX:x,dir:x>0?-1:1,type,alive:true,phase:Math.random()*6.28});
+}
+function addTree(x,z,s=1){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.3*s,.42*s,2.2*s,10),material(0x75482a));trunk.position.y=1.1*s;g.add(trunk);
+  for(const [ox,oy,oz,r] of [[0,2.6,0,1.25],[-.75,2.2,.1,.85],[.75,2.25,.05,.9],[0,3.25,.1,.8]]){
+    const crown=new THREE.Mesh(new THREE.SphereGeometry(r*s,14,10),material(0x2e9852));crown.position.set(ox*s,oy*s,oz*s);g.add(crown);
   }
-  playerShadow=new THREE.Mesh(new THREE.CircleGeometry(.62,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.28}));
-  playerShadow.rotation.x=-Math.PI/2;playerShadow.position.y=-1.22;player.add(playerShadow);
-  scene.add(player);
+  g.position.set(x,0,z);scene.add(g);decor.push(g);
+}
+function addCloud(x,y,z,s=1){
+  const g=new THREE.Group();
+  for(const [ox,oy,r] of [[0,0,1.1],[1.1,.08,.9],[-1.05,.05,.82],[.25,.42,.88]]){const p=new THREE.Mesh(new THREE.SphereGeometry(r*s,14,10),material(0xffffff,1));p.position.set(ox*s,oy*s,0);g.add(p)}
+  g.position.set(x,y,z);scene.add(g);decor.push(g);
+}
+function addBounce(x,z){
+  const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(.72,.82,.22,20),material(0x5b35c5,.35,.25));base.position.y=.12;g.add(base);
+  const top=new THREE.Mesh(new THREE.CylinderGeometry(.58,.7,.14,20),material(0xffd84a,.3,.35));top.position.y=.29;g.add(top);
+  g.position.set(x,0,z);scene.add(g);bouncePads.push({group:g,x,z});
+}
+function addCheckpoint(z){
+  const g=new THREE.Group();
+  const pole=addBox(0,1.9,z,.12,3.8,.12,0xd8d8dc);g.add(pole);
+  const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.7,.95),new THREE.MeshStandardMaterial({color:0x9b6cff,side:THREE.DoubleSide,roughness:.5}));flag.position.set(.8,3.15,z);flag.rotation.y=Math.PI/2;scene.add(flag);g.add(flag);
+  checkpoints.push({z,used:false});
+}
+function addGate(z){
+  const left=addBox(-2.2,2.4,z,.55,4.8,.7,0x33204f),right=addBox(2.2,2.4,z,.55,4.8,.7,0x33204f),top=addBox(0,4.55,z,4.95,.55,.7,0x33204f);
+  const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.72,.1),material(0x9b6cff,.25,.65));crystal.position.set(0,3.3,z-.45);scene.add(crystal);decor.push(crystal);
+  return {z,left,right,top,crystal};
 }
 
 function createWorld(){
-  const ground=addBox(0,-.55,-17,26,1,52,0x58a946);
-  ground.material.roughness=.95;
-
-  for(let z=-39;z<=5;z+=6){
-    const strip=addBox(0,-.035,z,25.5,.05,2.4,z%12===0?0x72c957:0x63b94d);
-    strip.material.roughness=1;
-  }
-
-  const routes=[
-    [-8,1.1,-5,5,0.7,3,0xa56cff],
-    [7,2.0,-10,4.5,.7,3,0x58a9e8],
-    [-5,3.0,-17,4,.7,3,0xa56cff],
-    [5,4.1,-24,5,.7,3,0x58a9e8],
-    [-5,5.3,-31,4.5,.7,3,0xa56cff],
-    [4,6.5,-37,5,.7,3,0x58a9e8]
+  addBox(0,-.55,-39,28,1,100,0x4f9f48);
+  for(let z=4;z>-88;z-=5){const s=addBox(0,-.02,z,27.5,.05,2.0,(Math.abs(z)%10<1)?0x70c456:0x62b64c);s.material.roughness=1}
+  const route=[
+    [-8,1.1,-4,5.4,.7,3,0xa56cff], [7,1.9,-10,4.5,.7,3,0x55aeea],
+    [-5,2.9,-17,4.3,.7,3,0xa56cff], [5,4.0,-24,5,.7,3,0x55aeea],
+    [-6,5.1,-31,4.6,.7,3,0xa56cff], [5,6.2,-39,5,.7,3,0x55aeea],
+    [-5,7.2,-48,4.8,.7,3,0xa56cff], [5,8.2,-57,5.2,.7,3,0x55aeea],
+    [-5,9.1,-67,5,.7,3,0xa56cff], [5,10.1,-76,5.6,.7,3,0x55aeea]
   ];
-  for(const p of routes)addPlatform(...p);
-
-  addPlatform(0,1.8,-12,2.8,.65,2.5,0xffc84d);
-  addPlatform(0,4.2,-21,2.5,.65,2.5,0xffc84d);
-  addPlatform(0,6.8,-34,2.4,.65,2.4,0xffc84d);
-
-  for(let i=0;i<9;i++){
-    const x=-10+(i%3)*10,z=-2-Math.floor(i/3)*12;
-    const trunk=addBox(x,1.15,z,.65,2.3,.65,0x70452a);
-    const crown=new THREE.Mesh(new THREE.SphereGeometry(1.55,16,12),mat(0x2f8c4e));
-    crown.position.set(x,2.65,z);scene.add(crown);decor.push(crown);
+  route.forEach(p=>addPlatform(...p));
+  addPlatform(0,1.7,-7,3,.65,2.5,0xffc84d);addPlatform(0,3.9,-20,2.8,.65,2.5,0xffc84d);
+  addPlatform(0,6.1,-34,2.7,.65,2.5,0xffc84d);addPlatform(0,8.1,-53,2.8,.65,2.5,0xffc84d);
+  addPlatform(0,10.0,-72,2.8,.65,2.5,0xffc84d);
+  [[-11,-7,1.1],[11,-15,1.3],[-11,-26,1.2],[11,-36,1.4],[-11,-50,1.25],[11,-61,1.3],[-11,-77,1.2]].forEach(a=>addTree(...a));
+  [[-8,9,-11,1.2],[7,10,-29,1.5],[-7,11,-48,1.1],[7,13,-69,1.4]].forEach(a=>addCloud(...a));
+  // Decorative hills make the horizon feel alive.
+  for(const [x,z,s,c] of [[-11,-12,1.3,0x3e9b57],[11,-23,1.5,0x347f50],[-11,-42,1.5,0x4ca95b],[11,-62,1.6,0x347f50],[-11,-80,1.4,0x4ca95b]]){
+    const h=new THREE.Mesh(new THREE.ConeGeometry(5*s,7*s,32),material(c));h.position.set(x,2.7*s,z);h.scale.y=.72;scene.add(h);decor.push(h);
   }
-
-  createCoins();
-  createEnemies();
-
-
-  // Elementos de cenário para dar a sensação de um grande mundo 3D de plataforma.
-  function cloud(x,y,z,s=1){
-    const g=new THREE.Group();
-    for(const [ox,oy,oz,r] of [[0,0,0,1.1],[1.15,.08,0,.9],[-1.1,.05,0,.82],[.25,.45,.1,.9]]){
-      const puff=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1}));
-      puff.position.set(ox*s,oy*s,oz*s);g.add(puff);
-    }
-    g.position.set(x,y,z);scene.add(g);decor.push(g);
-  }
-  cloud(-8,9,-10,1.2); cloud(6,10,-20,1.45); cloud(-7,8,-30,1.05); cloud(7,11,-38,1.25);
-
-  function hill(x,z,s,c){
-    const hill=new THREE.Mesh(new THREE.ConeGeometry(5*s,7*s,32),mat(c));
-    hill.position.set(x,3.0*s,z);hill.scale.y=.72;scene.add(hill);decor.push(hill);
-  }
-  hill(-11,-8,1.2,0x3f9a55); hill(11,-18,1.4,0x347f50); hill(-11,-31,1.35,0x4ca95b);
-
-  // Blocos suspensos e "caixas surpresa" são formas originais do FELPIX.
-  const blocks=[
-    [-3,2.7,-9,0xffc84d],[-1.6,2.7,-9,0xffc84d],[6,3.7,-14,0xa56cff],
-    [2,5.0,-23,0xffc84d],[-7,6.3,-29,0xa56cff],[1.5,7.8,-35,0xffc84d]
-  ];
-  for(const [x,y,z,c] of blocks){
-    const b=addBox(x,y,z,.72,.72,.72,c);
-    b.material.emissive=new THREE.Color(c).multiplyScalar(.12);
-  }
-
-  // Tubos decorativos: inspiração de jogos de plataforma, com identidade própria.
-  function tube(x,z,h=1.7,c=0x2d9b59){
-    const g=new THREE.Group();
-    const body=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,h,20),mat(c));
-    body.position.y=h/2-.05;g.add(body);
-    const rim=new THREE.Mesh(new THREE.CylinderGeometry(.86,.86,.28,20),mat(0x43c06d));
-    rim.position.y=h-.05;g.add(rim);
-    g.position.set(x,0,z);scene.add(g);decor.push(g);
-  }
-  tube(-9,-13,2.1); tube(9,-27,2.6); tube(-9,-39,2.0);
-
-  const flagPole=addBox(8,3.8,-40,.16,7.6,.16,0xd8d8dc);
-  const flag=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.25),new THREE.MeshStandardMaterial({color:0x9b6cff,side:THREE.DoubleSide}));
-  flag.position.set(9.05,6.4,-40);flag.rotation.y=Math.PI/2;scene.add(flag);
-  const goal=addBox(8,0.2,-40,2.4,.2,1.8,0x2a303b);
-  goal.material.metalness=.5;
-}
-
-function addPlatform(x,y,z,w,h,d,color){
-  const m=addBox(x,y,z,w,h,d,color);
-  m.userData.platform=true;
-  platforms.push({mesh:m,top:y+h/2,x1:x-w/2,x2:x+w/2,z1:z-d/2,z2:z+d/2});
-}
-
-function createCoins(){
-  const pts=[
-    [-8,2.0,-5],[7,2.9,-10],[-5,3.9,-17],[0,2.7,-12],
-    [5,5.0,-24],[-5,6.2,-31],[0,5.1,-21],[4,7.4,-37],[0,7.6,-34]
-  ];
-  for(const [x,y,z] of pts){
-    const c=new THREE.Mesh(new THREE.TorusGeometry(.34,.11,12,24),new THREE.MeshStandardMaterial({color:0xffd84a,metalness:.65,roughness:.25,emissive:0x5a3d00}));
-    c.position.set(x,y,z);c.rotation.y=Math.PI/2;scene.add(c);coinItems.push({mesh:c,got:false});
-  }
-}
-
-function createEnemies(){
-  const pts=[[-2,0,-8],[3,0,-15],[-2,0,-27],[1,0,-36]];
-  for(const [x,y,z] of pts){
-    const g=new THREE.Group();g.position.set(x,.55,z);
-    const body=new THREE.Mesh(new THREE.SphereGeometry(.52,16,12),mat(0x8f475c));g.add(body);
-    const eyeMat=mat(0xffffff);
-    for(const s of [-1,1]){
-      const e=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),eyeMat);e.position.set(s*.18,.12,.43);g.add(e);
-      const p=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),mat(0x111111));p.position.set(s*.18,.12,.52);g.add(p);
-    }
-    const foot=mat(0x4a2232);
-    for(const s of [-1,1]){
-      const f=new THREE.Mesh(new THREE.BoxGeometry(.25,.18,.35),foot);f.position.set(s*.22,-.48,.05);g.add(f);
-    }
-    scene.add(g);enemies.push({group:g,startX:x,dir:x>0?-1:1});
-  }
+  // Floating surprise blocks and rings.
+  [[-3,2.65,-8,0xffc84d],[5,3.0,-13,0x9b6cff],[-2,4.8,-23,0xffc84d],[6,5.3,-30,0x9b6cff],[-5,7,-43,0xffc84d],[4,8.9,-60,0xffc84d],[-5,10.1,-70,0x9b6cff]].forEach(([x,y,z,c])=>{const b=addBox(x,y,z,.72,.72,.72,c);b.material.emissive=new THREE.Color(c).multiplyScalar(.14)});
+  addBounce(-7,-13);addBounce(7,-28);addBounce(-6,-46);addBounce(6,-64);
+  addCheckpoint(-30);addCheckpoint(-57);
+  const gate=addGate(-83);
+  // Crystals form the main collectible route, with a few risky side crystals.
+  [[-8,2,-4],[7,2.8,-10],[0,2.7,-7],[-5,3.8,-17],[5,4.9,-24],[0,4.7,-20],[-6,5.9,-31],[5,7.1,-39],[-5,7.9,-48],[5,9.1,-57],[0,9.8,-72],[5,10.9,-76]].forEach((p,i)=>addCrystal(...p,i===11?'big':'normal'));
+  createEnemy(-2,-9);createEnemy(3,-16);createEnemy(-2,-26,'charger');createEnemy(2,-37);createEnemy(-2,-51,'charger');createEnemy(3,-63);createEnemy(-2,-75,'charger');
+  return gate;
 }
 
 function init(){
-  scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x72cfff);
-  scene.fog=new THREE.Fog(0x77cfff,22,70);
-
-  camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,120);
-  camera.position.set(0,6.5,11);
-
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(1.8,devicePixelRatio||1));
-  renderer.setSize(innerWidth,innerHeight);
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x72cfff);scene.fog=new THREE.Fog(0x77cfff,25,95);
+  camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);camera.position.set(0,6.5,13);
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(1.7,devicePixelRatio||1));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
   clock=new THREE.Clock();
-
-  const hemi=new THREE.HemisphereLight(0xdff5ff,0x26331e,2.2);scene.add(hemi);
-  const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,20,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
-
-  createWorld();
-  createPlayer();
-  window.addEventListener('resize',resize);
-  bindControls();
-  renderer.setAnimationLoop(loop);
+  scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
+  const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+  createWorld();createPlayer();bindControls();addEventListener('resize',resize);renderer.setAnimationLoop(loop);
 }
-
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
 
-function setKey(name,value){keys[name]=value}
-function bindHold(id,name){
-  const el=document.getElementById(id);
-  const down=e=>{e.preventDefault();setKey(name,true)};
-  const up=e=>{e.preventDefault();setKey(name,false)};
-  el.addEventListener('pointerdown',down);
-  el.addEventListener('pointerup',up);
-  el.addEventListener('pointercancel',up);
-  el.addEventListener('pointerleave',up);
-  el.addEventListener('lostpointercapture',up);
+function bindJoystick(){
+  const joy=document.getElementById('joystick'),stick=document.getElementById('stick');let active=false,pid=null;const radius=56;
+  const reset=()=>{active=false;pid=null;stickInput.x=0;stickInput.y=0;stick.style.transform='translate(0,0)'};
+  const move=e=>{if(!active||e.pointerId!==pid)return;e.preventDefault();const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const len=Math.hypot(dx,dy);if(len>radius){dx=dx/len*radius;dy=dy/len*radius}stickInput.x=dx/radius;stickInput.y=dy/radius;stick.style.transform='translate('+dx+'px,'+dy+'px)'};
+  joy.addEventListener('pointerdown',e=>{e.preventDefault();active=true;pid=e.pointerId;joy.setPointerCapture?.(pid);move(e)});
+  joy.addEventListener('pointermove',move);joy.addEventListener('pointerup',e=>{if(e.pointerId===pid)reset()});joy.addEventListener('pointercancel',reset);joy.addEventListener('lostpointercapture',reset);
 }
 function bindControls(){
-  bindHold('left','left');
-  bindHold('right','right');
-  bindHold('forward','forward');
-  bindHold('back','back');
-  const jump=document.getElementById('jump');
-  jump.addEventListener('pointerdown',e=>{e.preventDefault();doJump()});
-  addEventListener('keydown',e=>{
-    if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=true;
-    if(e.code==='ArrowRight'||e.code==='KeyD')keys.right=true;
-    if(e.code==='ArrowUp'||e.code==='KeyW')keys.forward=true;
-    if(e.code==='ArrowDown'||e.code==='KeyS')keys.back=true;
-    if(e.code==='Space')doJump();
-  });
-  addEventListener('keyup',e=>{
-    if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=false;
-    if(e.code==='ArrowRight'||e.code==='KeyD')keys.right=false;
-    if(e.code==='ArrowUp'||e.code==='KeyW')keys.forward=false;
-    if(e.code==='ArrowDown'||e.code==='KeyS')keys.back=false;
-  });
+  bindJoystick();
+  const jump=document.getElementById('jump');jump.addEventListener('pointerdown',e=>{e.preventDefault();doJump()});
+  addEventListener('keydown',e=>{if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=true;if(e.code==='ArrowRight'||e.code==='KeyD')keys.right=true;if(e.code==='ArrowUp'||e.code==='KeyW')keys.forward=true;if(e.code==='ArrowDown'||e.code==='KeyS')keys.back=true;if(e.code==='Space')doJump()});
+  addEventListener('keyup',e=>{if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=false;if(e.code==='ArrowRight'||e.code==='KeyD')keys.right=false;if(e.code==='ArrowUp'||e.code==='KeyW')keys.forward=false;if(e.code==='ArrowDown'||e.code==='KeyS')keys.back=false});
 }
-
 function doJump(){
-  if(!running||jumpLock)return;
-  if(grounded){velocity.y=8.4;grounded=false;jumpLock=true;setTimeout(()=>jumpLock=false,130)}
+  if(!running)return;
+  if(grounded){velocity.y=9.2;grounded=false;beep(430,.09,'square',.025)}
+  else if(powerTime>0&&velocity.y<1.5){velocity.y=7.2;beep(620,.06,'sine',.02)}
 }
 
-function update(dt){
-  if(!running)return;
-  const move=new THREE.Vector3((keys.right?1:0)-(keys.left?1:0),0,(keys.back?1:0)-(keys.forward?1:0));
-  if(move.lengthSq())move.normalize();
-  const accel=22;
-  velocity.x+=move.x*accel*dt;
-  velocity.z+=move.z*accel*dt;
-  const drag=Math.pow(.0007,dt);
-  velocity.x*=drag;velocity.z*=drag;
-  const maxSpeed=7.2;
-  velocity.x=THREE.MathUtils.clamp(velocity.x,-maxSpeed,maxSpeed);
-  velocity.z=THREE.MathUtils.clamp(velocity.z,-maxSpeed,maxSpeed);
+function respawn(){
+  player.position.set(0,1.25,checkpointZ);velocity.set(0,0,0);shake=.18;
+}
+function loseLife(){
+  lives--;livesEl.textContent=lives;beep(120,.15,'sawtooth',.03);shake=.45;
+  if(lives<=0){running=false;showEnd('💥 FIM DE JOGO','Você ficou sem vidas. Tente de novo e descubra os atalhos da ilha.');return}
+  respawn();showToast('❤️ Vida perdida — continue!');
+}
+function useCheckpoint(){
+  for(const cp of checkpoints){if(!cp.used&&player.position.z<cp.z+1){cp.used=true;checkpointZ=cp.z+3;score+=100;scoreEl.textContent=score;showToast('🚩 Ponto de controle ativado!');beep(760,.12,'triangle',.03)}}
+}
 
-  velocity.y-=22*dt;
-  const oldY=player.position.y;
-  player.position.addScaledVector(velocity,dt);
-  player.position.x=THREE.MathUtils.clamp(player.position.x,world.minX,world.maxX);
-  player.position.z=THREE.MathUtils.clamp(player.position.z,world.minZ,world.maxZ);
-
+function updateMovement(dt){
+  const ix=THREE.MathUtils.clamp(stickInput.x+((keys.right?1:0)-(keys.left?1:0)),-1,1);
+  const iy=THREE.MathUtils.clamp(-stickInput.y+((keys.forward?1:0)-(keys.back?1:0)),-1,1);
+  camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();camRight.crossVectors(camForward,up).normalize();
+  moveDir.set(0,0,0).addScaledVector(camRight,ix).addScaledVector(camForward,iy);
+  if(moveDir.lengthSq()>1)moveDir.normalize();
+  const accel=28,maxSpeed=powerTime>0?9.6:7.8;
+  velocity.x+=moveDir.x*accel*dt;velocity.z+=moveDir.z*accel*dt;
+  const friction=Math.pow(.00055,dt);velocity.x*=friction;velocity.z*=friction;
+  if(moveDir.lengthSq()<.001){velocity.x*=Math.pow(.00008,dt);velocity.z*=Math.pow(.00008,dt)}
+  const sp=Math.hypot(velocity.x,velocity.z);if(sp>maxSpeed){const k=maxSpeed/sp;velocity.x*=k;velocity.z*=k}
+  velocity.y-=23*dt;
+  const oldY=player.position.y;player.position.addScaledVector(velocity,dt);
+  player.position.x=THREE.MathUtils.clamp(player.position.x,world.minX,world.maxX);player.position.z=THREE.MathUtils.clamp(player.position.z,world.minZ,world.maxZ);
   grounded=false;
   if(velocity.y<=0){
     for(const p of platforms){
-      if(player.position.x>.0+p.x1-.45&&player.position.x<p.x2+.45&&player.position.z>p.z1-.45&&player.position.z<p.z2+.45){
-        const bottom=player.position.y-1.25;
-        if(bottom<=p.top+.18&&bottom>=p.top-.7&&oldY-1.25>=p.top-.75){
-          player.position.y=p.top+1.25;velocity.y=0;grounded=true;break;
-        }
+      if(player.position.x>p.x1-.45&&player.position.x<p.x2+.45&&player.position.z>p.z1-.45&&player.position.z<p.z2+.45){
+        const bottom=player.position.y-1.25;if(bottom<=p.top+.2&&bottom>=p.top-.75&&oldY-1.25>=p.top-.8){player.position.y=p.top+1.25;velocity.y=0;grounded=true;break}
       }
     }
-    const baseTop=-.05;
-    if(!grounded&&player.position.x>-12.5&&player.position.x<12.5&&player.position.z>-42&&player.position.z<8){
-      const bottom=player.position.y-1.25;
-      if(bottom<=baseTop+.18&&bottom>=baseTop-.7&&oldY-1.25>=baseTop-.75){
-        player.position.y=baseTop+1.25;velocity.y=0;grounded=true;
-      }
-    }
+    const bottom=player.position.y-1.25;if(!grounded&&player.position.x>-13.5&&player.position.x<13.5&&player.position.z>-89&&player.position.z<10&&bottom<=.12&&bottom>=-.75&&oldY-1.25>=-.8){player.position.y=1.25;velocity.y=0;grounded=true}
   }
+  if(player.position.y<-6){loseLife();return}
+  if(moveDir.lengthSq()>.01){player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,Math.atan2(moveDir.x,moveDir.z),Math.min(1,dt*12));}
+  const runningAnim=grounded&&sp>1;
+  body.position.y=runningAnim?Math.sin(performance.now()*.018*sp)*.045:THREE.MathUtils.lerp(body.position.y,0,dt*8);
+  body.rotation.z=THREE.MathUtils.lerp(body.rotation.z,runningAnim?Math.sin(performance.now()*.018*sp)*.035:0,dt*10);
+  const a1=body.getObjectByName('arm-1'),a2=body.getObjectByName('arm1'),b1=body.getObjectByName('boot-1'),b2=body.getObjectByName('boot1');
+  if(runningAnim){const t=performance.now()*.018*sp;if(a1)a1.rotation.x=Math.sin(t)*.55;if(a2)a2.rotation.x=-Math.sin(t)*.55;if(b1)b1.rotation.x=-Math.sin(t)*.45;if(b2)b2.rotation.x=Math.sin(t)*.45}
+  shadow.scale.setScalar(grounded?1:Math.max(.65,1-(player.position.y-1.25)*.08));
+}
 
-  if(player.position.y<-5){loseLife();return}
-
-  player.rotation.y=Math.atan2(velocity.x,Math.max(.1,Math.abs(velocity.z)))+ (velocity.z>0?Math.PI:0);
-  playerBody.rotation.z=THREE.MathUtils.lerp(playerBody.rotation.z,Math.sin(performance.now()*.008)*.035,dt*8);
-
-  for(const c of coinItems){
-    if(c.got)continue;
-    c.mesh.rotation.y+=dt*4;
-    if(player.position.distanceTo(c.mesh.position)<1.15){c.got=true;c.mesh.visible=false;coins++;coinsEl.textContent=coins}
+function updateWorld(dt){
+  for(const c of crystals){
+    if(c.got)continue;c.group.rotation.y+=dt*1.8;c.group.position.y+=Math.sin(performance.now()*.003+c.group.position.z)*dt*.25;
+    if(player.position.distanceTo(c.group.position)<1.2){c.got=true;c.group.visible=false;coins++;score+=c.kind==='big'?500:100;coinsEl.textContent=coins;scoreEl.textContent=score;beep(c.kind==='big'?920:700,.09,'triangle',.035);showToast(c.kind==='big'?'💎 CRISTAL LENDÁRIO!':'💎 Cristal coletado!');}
   }
-
   for(const e of enemies){
-    if(!e.group.visible)continue;
-    e.group.position.x+=e.dir*dt*1.5;
-    if(Math.abs(e.group.position.x-e.startX)>2.3)e.dir*=-1;
-    e.group.rotation.y+=dt*1.5;
-    const dx=player.position.x-e.group.position.x,dz=player.position.z-e.group.position.z;
-    if(Math.hypot(dx,dz)<1.15&&player.position.y<e.group.position.y+1.25){
-      if(velocity.y<0&&player.position.y>e.group.position.y+.45){e.group.visible=false;velocity.y=7.2}
+    if(!e.alive)continue;e.phase+=dt*3;
+    if(e.type==='charger'&&Math.abs(player.position.z-e.group.position.z)<5)e.group.position.x+=Math.sign(player.position.x-e.group.position.x)*dt*2.8;
+    else e.group.position.x+=e.dir*dt*(e.type==='charger'?2.1:1.45);
+    if(Math.abs(e.group.position.x-e.startX)>2.4)e.dir*=-1;
+    e.group.position.y=.58+Math.sin(e.phase)*.03;e.group.rotation.y+=dt*1.4;
+    const dx=player.position.x-e.group.position.x,dz=player.position.z-e.group.position.z,dist=Math.hypot(dx,dz);
+    if(dist<1.2&&player.position.y<e.group.position.y+1.3){
+      if(velocity.y<0&&player.position.y>e.group.position.y+.35){e.alive=false;e.group.visible=false;velocity.y=8.2;score+=250;scoreEl.textContent=score;beep(190,.08,'square',.03);showToast('💥 ESMAGADO! +250');}
       else {loseLife();return}
     }
   }
-
-  if(player.position.z<-41&&player.position.y<3){
-    running=false;showEnd('🏁 MUNDO 1 CONCLUÍDO','Você chegou à bandeira! O próximo passo será transformar este protótipo em um mundo completo.');
+  for(const b of bouncePads){
+    const dx=player.position.x-b.x,dz=player.position.z-b.z;if(Math.hypot(dx,dz)<1.15&&player.position.y<1.7&&grounded){velocity.y=12.5;grounded=false;beep(820,.12,'sine',.025);showToast('🚀 SUPER PULO!')}
+    b.group.rotation.y+=dt*.7;
   }
-
-  const target=new THREE.Vector3(player.position.x*.45,player.position.y+5.2,player.position.z+9.5);
-  camera.position.lerp(target,1-Math.pow(.0005,dt));
-  camera.lookAt(player.position.x,player.position.y+1,player.position.z-3);
+  useCheckpoint();
+  if(powerTime>0){powerTime-=dt;powerBar.style.opacity=1;powerFill.style.width=Math.max(0,powerTime/8*100)+'%';if(powerTime<=0){powerTime=0;showToast('⭐ Poder acabou')}}
+  for(const d of decor){if(d.type!=='flag')d.rotation.y+=dt*.04}
+  // Win only after collecting most of the island, so the level has a goal beyond walking forward.
+  if(player.position.z<-81&&coins>=8){running=false;score+=1000;scoreEl.textContent=score;showEnd('🏆 ILHA CONQUISTADA!','Você abriu o portão com '+coins+'/12 cristais e fez '+score+' pontos.');beep(1040,.25,'triangle',.05)}
+  progressEl.textContent=coins>=8?'🚪 O portão está aberto! Chegue ao final da ilha':'💎 Colete '+Math.max(0,8-coins)+' cristais para abrir o portão';
 }
 
-function loseLife(){
-  lives--;livesEl.textContent=lives;
-  if(lives<=0){running=false;showEnd('💥 FIM DE JOGO','As três vidas acabaram.');return}
-  player.position.set(0,1.25,5);velocity.set(0,0,0);
+function updateCamera(dt){
+  const desired=new THREE.Vector3(player.position.x,player.position.y+5.4,player.position.z+10.5);
+  camera.position.lerp(desired,1-Math.pow(.0008,dt));camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);
+  if(shake>0){shake=Math.max(0,shake-dt);camera.position.x+=(Math.random()-.5)*shake*.8;camera.position.y+=(Math.random()-.5)*shake*.5}
 }
-
 function showEnd(title,text){
-  overlay.innerHTML='<section class="panel"><h1>'+title+'</h1><p>'+text+'</p><button id="again" class="start" type="button">🔄 JOGAR NOVAMENTE</button></section>';
-  overlay.classList.remove('hidden');
-  document.getElementById('again').onclick=restart;
+  overlay.innerHTML='<section class="panel"><h1>'+title+'</h1><p>'+text+'</p><button id="again" class="start" type="button">🔄 JOGAR NOVAMENTE</button><p class="small">Dica: explore as laterais, use as plataformas amarelas e procure os cristais.</p></section>';
+  overlay.classList.remove('hidden');document.getElementById('again').onclick=restart;
 }
-
 function restart(){
-  coins=0;lives=3;coinsEl.textContent='0';livesEl.textContent='3';
-  for(const c of coinItems){c.got=false;c.mesh.visible=true}
-  for(const e of enemies){e.group.visible=true;e.group.position.x=e.startX}
-  player.position.set(0,1.25,5);velocity.set(0,0,0);grounded=false;
-  overlay.classList.add('hidden');running=true;
+  coins=0;lives=3;score=0;powerTime=0;checkpointZ=6;coinsEl.textContent='0';livesEl.textContent='3';scoreEl.textContent='0';
+  crystals.forEach(c=>{c.got=false;c.group.visible=true});
+  enemies.forEach(e=>{e.alive=true;e.group.visible=true;e.group.position.x=e.startX});
+  checkpoints.forEach(c=>c.used=false);respawn();overlay.classList.add('hidden');running=true;clock.start();beep(520,.08,'triangle',.025);
 }
-
 function loop(){
   const dt=Math.min(.033,clock.getDelta());
-  update(dt);
-  for(const d of decor)d.rotation.y+=dt*.12;
+  if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
   renderer.render(scene,camera);
 }
-
-startBtn.onclick=()=>{overlay.classList.add('hidden');running=true;clock.start()};
+startBtn.onclick=()=>{overlay.classList.add('hidden');running=true;clock.start();beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')};
 init();
 </script>
 </body>
