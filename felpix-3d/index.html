@@ -40,7 +40,7 @@
 </div>
 <div id="progress" class="progress">Encontre os cristais e abra o portão</div>
 <div id="powerBar"><div id="powerFill"></div></div>
-<div id="toast"></div>
+<div id="toast"></div><div id="fatal" class="hidden" style="position:absolute;z-index:50;inset:12px;display:grid;place-items:center;pointer-events:none"><div class="panel" style="max-width:520px"><h2>⚠️ FELPIX 3D</h2><p id="fatalText"></p></div></div>
 <div id="overlay" class="overlay">
   <section class="panel">
     <h1>FELPIX 3D</h1>
@@ -180,14 +180,18 @@ function createWorld(){
   return gate;
 }
 
+function showFatal(e){const box=document.getElementById('fatal'),txt=document.getElementById('fatalText');if(!box||!txt)return;txt.textContent='Erro ao iniciar o 3D: '+(e&&e.message?e.message:String(e));box.classList.remove('hidden')}
+addEventListener('error',e=>showFatal(e.error||e.message));addEventListener('unhandledrejection',e=>showFatal(e.reason));
 function init(){
+  try{
   scene=new THREE.Scene();scene.background=new THREE.Color(0x72cfff);scene.fog=new THREE.Fog(0x77cfff,25,95);
   camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);camera.position.set(0,6.5,13);
   renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;
   clock=new THREE.Clock();
   scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
   const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
-  createWorld();createPlayer();bindControls();addEventListener('resize',resize);renderer.setAnimationLoop(loop);
+  createWorld();createPlayer();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
+  }catch(e){showFatal(e);throw e}
 }
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
 
@@ -306,7 +310,7 @@ function loop(){
   if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
   renderer.render(scene,camera);
 }
-function startGame(){overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
+function startGame(){try{overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')}catch(e){showFatal(e)}} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
 init();
 </script>
 </body>
