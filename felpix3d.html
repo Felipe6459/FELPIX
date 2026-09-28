@@ -68,7 +68,7 @@ let running=false,coins=0,lives=3,score=0,powerTime=0,checkpointZ=6;
 let toastTimer=0,shake=0;
 const keys={left:false,right:false,forward:false,back:false};
 const stickInput={x:0,y:0};
-const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];
+const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];\nlet starItem=null;
 const world={minX:-14,maxX:14,minZ:-88,maxZ:10};
 const up=new THREE.Vector3(0,1,0),camForward=new THREE.Vector3(),camRight=new THREE.Vector3(),moveDir=new THREE.Vector3();
 
@@ -255,7 +255,7 @@ function updateMovement(dt){
 }
 
 function updateWorld(dt){
-  for(const c of crystals){
+  if(starItem&&!starItem.got){starItem.mesh.rotation.x+=dt*2.5;starItem.mesh.rotation.y+=dt*3.2;starItem.mesh.position.y=5.2+Math.sin(performance.now()*.004)*.25;if(player.position.distanceTo(starItem.mesh.position)<1.3){starItem.got=true;starItem.mesh.visible=false;powerTime=8;score+=400;scoreEl.textContent=score;beep(980,.16,'square',.04);showToast('⭐ PODER FELPIX! Velocidade + super pulo por 8s');}}\n  for(const c of crystals){
     if(c.got)continue;c.group.rotation.y+=dt*1.8;c.group.position.y+=Math.sin(performance.now()*.003+c.group.position.z)*dt*.25;
     if(player.position.distanceTo(c.group.position)<1.2){c.got=true;c.group.visible=false;coins++;score+=c.kind==='big'?500:100;coinsEl.textContent=coins;scoreEl.textContent=score;beep(c.kind==='big'?920:700,.09,'triangle',.035);showToast(c.kind==='big'?'💎 CRISTAL LENDÁRIO!':'💎 Cristal coletado!');}
   }
@@ -294,7 +294,7 @@ function showEnd(title,text){
 }
 function restart(){
   coins=0;lives=3;score=0;powerTime=0;checkpointZ=6;coinsEl.textContent='0';livesEl.textContent='3';scoreEl.textContent='0';
-  crystals.forEach(c=>{c.got=false;c.group.visible=true});
+  crystals.forEach(c=>{c.got=false;c.group.visible=true});\n  if(starItem){starItem.got=false;starItem.mesh.visible=true;}
   enemies.forEach(e=>{e.alive=true;e.group.visible=true;e.group.position.x=e.startX});
   checkpoints.forEach(c=>c.used=false);respawn();overlay.classList.add('hidden');running=true;clock.start();beep(520,.08,'triangle',.025);
 }
