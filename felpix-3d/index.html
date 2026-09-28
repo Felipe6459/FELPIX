@@ -102,7 +102,7 @@ function addPlatform(x,y,z,w,h,d,c){
 }
 function addCrystal(x,y,z,kind='normal'){
   const g=new THREE.Group();
-  const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.38,.1),material(kind==='big'?0xffd84a:0x7ff3ff,.25,.65));
+  const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.38,0),material(kind==='big'?0xffd84a:0x7ff3ff,.25,.65));
   gem.rotation.y=.3;g.add(gem);
   const ring=new THREE.Mesh(new THREE.TorusGeometry(.55,.035,8,24),material(kind==='big'?0xffd84a:0x9a6cff,.2,.6));ring.rotation.x=Math.PI/2;g.add(ring);
   g.position.set(x,y,z);scene.add(g);crystals.push({group:g,got:false,kind});return g;
@@ -145,7 +145,7 @@ function addCheckpoint(z){
 }
 function addGate(z){
   const left=addBox(-2.2,2.4,z,.55,4.8,.7,0x33204f),right=addBox(2.2,2.4,z,.55,4.8,.7,0x33204f),top=addBox(0,4.55,z,4.95,.55,.7,0x33204f);
-  const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.72,.1),material(0x9b6cff,.25,.65));crystal.position.set(0,3.3,z-.45);scene.add(crystal);decor.push(crystal);
+  const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.72,0),material(0x9b6cff,.25,.65));crystal.position.set(0,3.3,z-.45);scene.add(crystal);decor.push(crystal);
   return {z,left,right,top,crystal};
 }
 
@@ -189,7 +189,7 @@ function init(){
   renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;
   clock=new THREE.Clock();
   scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
-  const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+  const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=false;scene.add(sun);
   createPlayer();createWorld();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
   }catch(e){showFatal(e);throw e}
 }
@@ -306,9 +306,11 @@ function restart(){
   checkpoints.forEach(c=>c.used=false);respawn();overlay.classList.add('hidden');running=true;clock.start();beep(520,.08,'triangle',.025);
 }
 function loop(){
-  const dt=Math.min(.033,clock.getDelta());
-  if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
-  renderer.render(scene,camera);
+  try{
+    const dt=Math.min(.033,clock.getDelta());
+    if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
+    renderer.render(scene,camera);
+  }catch(e){running=false;showFatal(e)}
 }
 function startGame(){try{overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')}catch(e){showFatal(e)}} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
 init();
