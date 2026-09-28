@@ -44,8 +44,8 @@
 <div id="overlay" class="overlay">
   <section class="panel">
     <h1>FELPIX 3D</h1>
-    <h2>🏝️ A Ilha dos Cristais</h2>
-    <p>Corra, pule, explore atalhos, esmague criaturas, pegue os 12 cristais e abra o portão no fim da ilha.</p>
+    <h2>🏁 A Grande Aventura FELPIX</h2>
+    <p>Corra sempre para frente, pule obstáculos, esmague criaturas, pegue os cristais e chegue ao portão final.</p>
     <button id="start" class="start" type="button" onclick="window.__felpixStartRequested=true;document.getElementById('overlay').classList.add('hidden')">🎮 COMEÇAR A AVENTURA</button>
     <p class="small">Protótipo 3D independente. O FELPIX 2D e a Cobrinha continuam intactos.</p>
   </section>
@@ -70,7 +70,7 @@ const keys={left:false,right:false,forward:false,back:false};
 const stickInput={x:0,y:0};
 const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];
 let starItem=null;
-const world={minX:-14,maxX:14,minZ:-88,maxZ:10};
+const world={minX:-7.5,maxX:7.5,minZ:-180,maxZ:10};
 const up=new THREE.Vector3(0,1,0),camForward=new THREE.Vector3(),camRight=new THREE.Vector3(),moveDir=new THREE.Vector3();
 
 function material(c,rough=.75,metal=.05){return new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal})}
@@ -150,36 +150,93 @@ function addGate(z){
 }
 
 function createWorld(){
-  addBox(0,-.55,-39,28,1,100,0x4f9f48);
-  for(let z=4;z>-88;z-=5){const s=addBox(0,-.02,z,27.5,.05,2.0,(Math.abs(z)%10<1)?0x70c456:0x62b64c);s.material.roughness=1}
+  // Fase linear: um único caminho para frente, com saltos, blocos, canos,
+  // inimigos e plataformas no estilo clássico de aventura de plataforma.
+  addBox(0,-.55,-84,15,1,188,0x5aa447);
+  for(let z=7;z>-180;z-=4){
+    const s=addBox(0,-.02,z,14.5,.05,1.5,(Math.abs(Math.round(z))%8===0)?0x70bf55:0x62ad4d);
+    s.material.roughness=1;
+  }
+
+  // Plataformas da rota principal: sempre em linha reta no eixo Z.
   const route=[
-    [-8,1.1,-4,5.4,.7,3,0xa56cff], [7,1.9,-10,4.5,.7,3,0x55aeea],
-    [-5,2.9,-17,4.3,.7,3,0xa56cff], [5,4.0,-24,5,.7,3,0x55aeea],
-    [-6,5.1,-31,4.6,.7,3,0xa56cff], [5,6.2,-39,5,.7,3,0x55aeea],
-    [-5,7.2,-48,4.8,.7,3,0xa56cff], [5,8.2,-57,5.2,.7,3,0x55aeea],
-    [-5,9.1,-67,5,.7,3,0xa56cff], [5,10.1,-76,5.6,.7,3,0x55aeea]
+    [0,1.15,-5,7.2,.7,3.2,0xa56cff],
+    [0,1.55,-13,5.8,.7,3.0,0x55aeea],
+    [0,2.05,-21,6.2,.7,3.0,0xa56cff],
+    [0,2.65,-30,5.6,.7,3.0,0x55aeea],
+    [0,1.3,-40,7.4,.7,3.0,0xa56cff],
+    [0,2.0,-49,5.8,.7,3.0,0x55aeea],
+    [0,2.8,-58,6.2,.7,3.0,0xa56cff],
+    [0,1.45,-68,7.4,.7,3.0,0x55aeea],
+    [0,2.3,-78,5.8,.7,3.0,0xa56cff],
+    [0,3.0,-88,6.4,.7,3.0,0x55aeea],
+    [0,1.55,-99,7.4,.7,3.0,0xa56cff],
+    [0,2.4,-110,5.8,.7,3.0,0x55aeea],
+    [0,3.15,-121,6.2,.7,3.0,0xa56cff],
+    [0,1.65,-133,7.4,.7,3.0,0x55aeea],
+    [0,2.5,-145,6.0,.7,3.0,0xa56cff],
+    [0,3.25,-157,6.4,.7,3.0,0x55aeea],
+    [0,1.45,-169,7.5,.7,3.2,0xa56cff]
   ];
   route.forEach(p=>addPlatform(...p));
-  addPlatform(0,1.7,-7,3,.65,2.5,0xffc84d);addPlatform(0,3.9,-20,2.8,.65,2.5,0xffc84d);
-  addPlatform(0,6.1,-34,2.7,.65,2.5,0xffc84d);addPlatform(0,8.1,-53,2.8,.65,2.5,0xffc84d);
-  addPlatform(0,10.0,-72,2.8,.65,2.5,0xffc84d);
-  [[-11,-7,1.1],[11,-15,1.3],[-11,-26,1.2],[11,-36,1.4],[-11,-50,1.25],[11,-61,1.3],[-11,-77,1.2]].forEach(a=>addTree(...a));
-  [[-8,9,-11,1.2],[7,10,-29,1.5],[-7,11,-48,1.1],[7,13,-69,1.4]].forEach(a=>addCloud(...a));
-  // Decorative hills make the horizon feel alive.
-  for(const [x,z,s,c] of [[-11,-12,1.3,0x3e9b57],[11,-23,1.5,0x347f50],[-11,-42,1.5,0x4ca95b],[11,-62,1.6,0x347f50],[-11,-80,1.4,0x4ca95b]]){
-    const h=new THREE.Mesh(new THREE.ConeGeometry(5*s,7*s,32),material(c));h.position.set(x,2.7*s,z);h.scale.y=.72;scene.add(h);decor.push(h);
+
+  // Blocos amarelos e "?" originais do FELPIX.
+  [[-2.2,2.55,-9],[2.2,2.55,-18],[-1.8,3.15,-27],[1.8,3.2,-37],
+   [-2.1,2.9,-52],[2.1,3.65,-62],[-1.8,2.95,-82],[2.0,3.8,-94],
+   [-2.0,3.1,-115],[2.0,3.85,-126],[-1.8,3.25,-148],[2.0,4.0,-160]]
+   .forEach(([x,y,z],i)=>{
+     const b=addBox(x,y,z,.8,.8,.8,i%3===0?0xffc84d:0xffd84a);
+     b.material.emissive=new THREE.Color(0xffc84d).multiplyScalar(.12);
+   });
+
+  // Canos e colunas decorativas, todos alinhados ao mesmo percurso.
+  [[-5,-16,1.7],[5,-34,1.9],[-5,-55,1.6],[5,-73,2.0],[-5,-91,1.8],
+   [5,-108,1.7],[-5,-130,2.0],[5,-151,1.8]].forEach(([x,z,h])=>{
+     addBox(x,h/2,z,1.25,h,1.25,0x2f9e55);
+     addBox(x,h+.08,z,1.55,.28,1.55,0x55c96b);
+   });
+
+  // Moedas/cristais: posicionados no caminho para incentivar saltos.
+  [[0,2.1,-5],[0,2.55,-13],[-1.6,3.0,-21],[1.6,3.35,-30],
+   [0,2.3,-40],[-1.5,3.0,-49],[1.5,3.75,-58],[0,2.4,-68],
+   [-1.5,3.35,-78],[1.5,4.05,-88],[0,2.45,-99],[-1.5,3.1,-110],
+   [1.5,3.95,-121],[0,2.55,-133],[-1.4,3.35,-145],[1.4,4.05,-157],
+   [0,2.35,-169],[0,4.1,-176]].forEach((p,i)=>addCrystal(...p,i===17?'big':'normal'));
+
+  // Inimigos originais, distribuídos no corredor linear.
+  createEnemy(0,-11);
+  createEnemy(-1.7,-24);
+  createEnemy(1.7,-43,'charger');
+  createEnemy(0,-54);
+  createEnemy(-1.8,-71,'charger');
+  createEnemy(1.7,-86);
+  createEnemy(0,-104,'charger');
+  createEnemy(-1.7,-119);
+  createEnemy(1.7,-138,'charger');
+  createEnemy(0,-153);
+  createEnemy(-1.5,-166,'charger');
+
+  // Árvores, colinas e nuvens nas laterais, sem criar caminhos alternativos.
+  [[-6.2,-8,1.0],[6.2,-20,1.15],[-6.2,-31,1.0],[6.2,-45,1.2],
+   [-6.2,-60,1.05],[6.2,-76,1.2],[-6.2,-96,1.05],[6.2,-114,1.2],
+   [-6.2,-132,1.1],[6.2,-149,1.2],[-6.2,-167,1.1]].forEach(a=>addTree(...a));
+  [[-4,8,-12,1.0],[4,9,-38,1.15],[-4,10,-66,1.0],[4,11,-101,1.2],
+   [-4,12,-139,1.0],[4,13,-170,1.2]].forEach(a=>addCloud(...a));
+
+  // Pequenos morros laterais para dar a leitura visual de fase clássica.
+  for(const [x,z,s,c] of [[-7,-25,1.1,0x3e9b57],[7,-50,1.2,0x347f50],[-7,-82,1.15,0x4ca95b],
+                          [7,-116,1.25,0x347f50],[-7,-151,1.15,0x4ca95b], [7,-174,1.2,0x347f50]]){
+    const h=new THREE.Mesh(new THREE.ConeGeometry(4*s,6*s,24),material(c));
+    h.position.set(x,2.3*s,z);h.scale.y=.75;scene.add(h);decor.push(h);
   }
-  // Floating surprise blocks and rings.
-  [[-3,2.65,-8,0xffc84d],[5,3.0,-13,0x9b6cff],[-2,4.8,-23,0xffc84d],[6,5.3,-30,0x9b6cff],[-5,7,-43,0xffc84d],[4,8.9,-60,0xffc84d],[-5,10.1,-70,0x9b6cff]].forEach(([x,y,z,c])=>{const b=addBox(x,y,z,.72,.72,.72,c);b.material.emissive=new THREE.Color(c).multiplyScalar(.14)});
-  addBounce(-7,-13);addBounce(7,-28);addBounce(-6,-46);addBounce(6,-64);
-  addCheckpoint(-30);addCheckpoint(-57);
-  const gate=addGate(-83);
-  // Crystals form the main collectible route, with a few risky side crystals.
-  [[-8,2,-4],[7,2.8,-10],[0,2.7,-7],[-5,3.8,-17],[5,4.9,-24],[0,4.7,-20],[-6,5.9,-31],[5,7.1,-39],[-5,7.9,-48],[5,9.1,-57],[0,9.8,-72],[5,10.9,-76]].forEach((p,i)=>addCrystal(...p,i===11?'big':'normal'));
-  createEnemy(-2,-9);createEnemy(3,-16);createEnemy(-2,-26,'charger');createEnemy(2,-37);createEnemy(-2,-51,'charger');createEnemy(3,-63);createEnemy(-2,-75,'charger');
+
+  addBounce(0,-35);addBounce(0,-74);addBounce(0,-113);addBounce(0,-154);
+  addCheckpoint(-58);addCheckpoint(-121);
+
+  // Portão final substitui o castelo, mantendo identidade própria FELPIX.
+  const gate=addGate(-178);
   return gate;
 }
-
 function showFatal(e){const box=document.getElementById('fatal'),txt=document.getElementById('fatalText');if(!box||!txt)return;txt.textContent='Erro ao iniciar o 3D: '+(e&&e.message?e.message:String(e));box.classList.remove('hidden')}
 addEventListener('error',e=>showFatal(e.error||e.message));addEventListener('unhandledrejection',e=>showFatal(e.reason));
 function init(){
@@ -232,12 +289,12 @@ function updateMovement(dt){
   camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();camRight.crossVectors(camForward,up).normalize();
   moveDir.set(0,0,0).addScaledVector(camRight,ix).addScaledVector(camForward,iy);
   if(moveDir.lengthSq()>1)moveDir.normalize();
-  const accel=28,maxSpeed=powerTime>0?9.6:7.8;
+  const accel=42,maxSpeed=powerTime>0?15.5:12.5;
   velocity.x+=moveDir.x*accel*dt;velocity.z+=moveDir.z*accel*dt;
   const friction=Math.pow(.00055,dt);velocity.x*=friction;velocity.z*=friction;
   if(moveDir.lengthSq()<.001){velocity.x*=Math.pow(.00008,dt);velocity.z*=Math.pow(.00008,dt)}
   const sp=Math.hypot(velocity.x,velocity.z);if(sp>maxSpeed){const k=maxSpeed/sp;velocity.x*=k;velocity.z*=k}
-  velocity.y-=23*dt;
+  velocity.y-=26*dt;
   const oldY=player.position.y;player.position.addScaledVector(velocity,dt);
   player.position.x=THREE.MathUtils.clamp(player.position.x,world.minX,world.maxX);player.position.z=THREE.MathUtils.clamp(player.position.z,world.minZ,world.maxZ);
   grounded=false;
@@ -285,13 +342,13 @@ function updateWorld(dt){
   if(powerTime>0){powerTime-=dt;powerBar.style.opacity=1;powerFill.style.width=Math.max(0,powerTime/8*100)+'%';if(powerTime<=0){powerTime=0;showToast('⭐ Poder acabou')}}
   for(const d of decor){if(d.type!=='flag')d.rotation.y+=dt*.04}
   // Win only after collecting most of the island, so the level has a goal beyond walking forward.
-  if(player.position.z<-81&&coins>=8){running=false;score+=1000;scoreEl.textContent=score;showEnd('🏆 ILHA CONQUISTADA!','Você abriu o portão com '+coins+'/12 cristais e fez '+score+' pontos.');beep(1040,.25,'triangle',.05)}
+  if(player.position.z<-176&&coins>=8){running=false;score+=1000;scoreEl.textContent=score;showEnd('🏆 ILHA CONQUISTADA!','Você abriu o portão com '+coins+'/12 cristais e fez '+score+' pontos.');beep(1040,.25,'triangle',.05)}
   progressEl.textContent=coins>=8?'🚪 O portão está aberto! Chegue ao final da ilha':'💎 Colete '+Math.max(0,8-coins)+' cristais para abrir o portão';
 }
 
 function updateCamera(dt){
   const desired=new THREE.Vector3(player.position.x,player.position.y+5.4,player.position.z+10.5);
-  camera.position.lerp(desired,1-Math.pow(.0008,dt));camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);
+  camera.position.lerp(desired,1-Math.pow(.0018,dt));camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);
   if(shake>0){shake=Math.max(0,shake-dt);camera.position.x+=(Math.random()-.5)*shake*.8;camera.position.y+=(Math.random()-.5)*shake*.5}
 }
 function showEnd(title,text){
@@ -312,7 +369,7 @@ function loop(){
     renderer.render(scene,camera);
   }catch(e){running=false;showFatal(e)}
 }
-function startGame(){try{overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')}catch(e){showFatal(e)}} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
+function startGame(){try{overlay.classList.add('hidden');running=true;clock.start();camera.position.set(player.position.x,player.position.y+5.4,player.position.z+10.5);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);beep(520,.1,'triangle',.025);showToast('🏁 Corra para frente! Pule, esmague e pegue os cristais!')}catch(e){showFatal(e)}} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
 init();
 </script>
 </body>
