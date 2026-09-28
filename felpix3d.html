@@ -157,10 +157,10 @@ function createWorld(){
 
   // Plataformas da rota principal: sempre em linha reta no eixo Z.
   const route=[
-    [0,1.15,-5,7.2,.7,3.2,0xa56cff],
-    [0,1.35,-11,6.6,.7,3.8,0x55aeea],
-    [0,1.8,-18,6.2,.7,3.4,0xa56cff],
-    [0,2.35,-26,5.6,.7,3.4,0x55aeea],
+    [0,1.15,-5,7.2,.7,3.6,0xa56cff],
+    [0,1.35,-10,6.8,.7,4.0,0x55aeea],
+    [0,1.8,-15.5,6.5,.7,3.8,0xa56cff],
+    [0,2.35,-21.5,5.8,.7,3.8,0x55aeea],
     [0,1.3,-40,7.4,.7,3.0,0xa56cff],
     [0,2.0,-49,5.8,.7,3.0,0x55aeea],
     [0,2.8,-58,6.2,.7,3.0,0xa56cff],
@@ -201,7 +201,7 @@ function createWorld(){
    [0,2.35,-169],[0,4.1,-176]].forEach((p,i)=>addCrystal(...p,i===17?'big':'normal'));
 
   // Inimigos originais, distribuídos no corredor linear.
-  createEnemy(2.2,-14);
+  createEnemy(2.2,-17);
   createEnemy(-1.7,-24);
   createEnemy(1.7,-43,'charger');
   createEnemy(0,-54);
@@ -264,7 +264,7 @@ function bindControls(){
 }
 function doJump(){
   if(!running)return;
-  if(grounded){velocity.y=13.5;grounded=false;beep(430,.09,'square',.025)}
+  if(grounded){velocity.y=16.0;grounded=false;beep(430,.09,'square',.025)}
   else if(powerTime>0&&velocity.y<1.5){velocity.y=7.2;beep(620,.06,'sine',.02)}
 }
 
