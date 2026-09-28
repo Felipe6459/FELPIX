@@ -46,7 +46,7 @@
     <h1>FELPIX 3D</h1>
     <h2>🏝️ A Ilha dos Cristais</h2>
     <p>Corra, pule, explore atalhos, esmague criaturas, pegue os 12 cristais e abra o portão no fim da ilha.</p>
-    <button id="start" class="start" type="button">🎮 COMEÇAR A AVENTURA</button>
+    <button id="start" class="start" type="button" onclick="window.__felpixStartRequested=true;document.getElementById('overlay').classList.add('hidden')">🎮 COMEÇAR A AVENTURA</button>
     <p class="small">Protótipo 3D independente. O FELPIX 2D e a Cobrinha continuam intactos.</p>
   </section>
 </div>
@@ -303,7 +303,7 @@ function loop(){
   if(running){updateMovement(dt);updateWorld(dt);updateCamera(dt)}
   renderer.render(scene,camera);
 }
-startBtn.onclick=()=>{overlay.classList.add('hidden');running=true;clock.start();beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')};
+function startGame(){overlay.classList.add('hidden');running=true;clock.start();beep(520,.1,'triangle',.025);showToast('🏝️ Encontre 8 cristais e siga em frente!')} startBtn.addEventListener('click',startGame); startBtn.addEventListener('pointerup',e=>{if(e.pointerType==='touch')startGame()});
 init();
 </script>
 </body>
