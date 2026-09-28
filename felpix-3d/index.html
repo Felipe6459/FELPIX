@@ -20,16 +20,16 @@ canvas{display:block;width:100%;height:100%}
 .panel p{margin:8px 0 20px;color:#cbd2e2;line-height:1.45}
 .start{border:0;border-radius:17px;padding:15px 25px;background:linear-gradient(135deg,#9d6cff,#5b35c5);color:#fff;font-weight:1000;font-size:18px;box-shadow:0 8px 20px #5b35c555}
 .small{margin-top:15px!important;font-size:12px;color:#8f9bb0!important}
-.controls{position:absolute;z-index:8;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 18px;pointer-events:none}
-.pad{display:flex;gap:14px}
-.btn{pointer-events:auto;width:76px;height:76px;border:2px solid #ffffff40;border-radius:50%;background:radial-gradient(circle at 35% 25%,#5b667a,#1b2637 65%,#0b111c);color:#fff;font-size:30px;font-weight:1000;box-shadow:0 7px 0 #050a12,0 12px 22px #0008;touch-action:none}
-.jump .btn{width:88px;height:88px;background:radial-gradient(circle at 35% 25%,#b28cff,#5b35c5 65%,#2d176e);font-size:38px}
-.action{display:flex;gap:10px}
-.action .btn{background:radial-gradient(circle at 35% 25%,#ffcf69,#b85c1e 65%,#63200d);font-size:27px}
+.controls{position:absolute;z-index:8;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 16px;pointer-events:none}
+.pad{display:grid;grid-template-columns:repeat(3,78px);grid-template-rows:78px 78px;gap:10px;align-items:center}
+.btn{pointer-events:auto;width:78px;height:78px;border:2px solid #ffffff40;border-radius:50%;background:radial-gradient(circle at 35% 25%,#5b667a,#1b2637 65%,#0b111c);color:#fff;font-size:30px;font-weight:1000;box-shadow:0 7px 0 #050a12,0 12px 22px #0008;touch-action:none}
+.jump .btn{width:100px;height:100px;background:radial-gradient(circle at 35% 25%,#b28cff,#5b35c5 65%,#2d176e);font-size:38px}
+.action{display:flex;gap:10px;align-items:end}
+.action .btn{width:92px;height:92px;background:radial-gradient(circle at 35% 25%,#ffcf69,#b85c1e 65%,#63200d);font-size:27px}
 .btn:active{transform:translateY(5px) scale(.96)}
 .hidden{display:none!important}
 #debug{position:absolute;z-index:6;left:12px;bottom:12px;font-size:11px;color:#ffffff80;pointer-events:none}
-@media(max-width:520px){.badge{font-size:12px;padding:8px 10px}.panel h1{font-size:40px}.btn{width:70px;height:70px}.jump .btn{width:82px;height:82px}}
+@media(max-width:520px){.badge{font-size:12px;padding:8px 10px}.panel h1{font-size:40px}.pad{grid-template-columns:repeat(3,68px);grid-template-rows:68px 68px;gap:8px}.btn{width:72px;height:72px}.jump .btn{width:92px;height:92px}.action .btn{width:82px;height:82px}}
 </style>
 </head>
 <body>
@@ -40,25 +40,23 @@ canvas{display:block;width:100%;height:100%}
   <div class="badge">🪙 <span id="coins">0</span> &nbsp;❤️ <span id="lives">3</span></div>
 </div>
 <div id="hint">WASD / setas para mover • ESPAÇO para pular</div>
-<div id="debug">PROTÓTIPO 3D • versão inicial</div>
+<div id="debug">PROTÓTIPO 3D • mundo de plataforma</div>
 <div id="overlay" class="overlay">
   <section class="panel">
     <h1>FELPIX 3D</h1>
     <h2>O primeiro mundo</h2>
-    <p>Explore, pule plataformas, colete moedas e descubra o caminho até a bandeira.</p>
+    <p>Um mundo 3D colorido de plataforma: corra, pule, pise nos inimigos, pegue moedas e chegue à bandeira.</p>
     <button id="start" class="start" type="button">🎮 INICIAR AVENTURA</button>
     <p class="small">Protótipo independente — o FELPIX 2D continua intacto.</p>
   </section>
 </div>
 <div class="controls">
   <div class="pad">
-    <button id="left" class="btn" type="button">◀</button>
-    <button id="right" class="btn" type="button">▶</button>
+    <span></span><button id="forward" class="btn" type="button">▲</button><span></span>
+    <button id="left" class="btn" type="button">◀</button><span></span><button id="right" class="btn" type="button">▶</button>
   </div>
   <div class="jump"><button id="jump" class="btn" type="button">▲</button></div>
-  <div class="action">
-    <button id="back" class="btn" type="button">▼</button>
-  </div>
+  <div class="action"><button id="back" class="btn" type="button">▼</button></div>
 </div>
 </main>
 <script type="module">
@@ -116,27 +114,27 @@ function createPlayer(){
 }
 
 function createWorld(){
-  const ground=addBox(0,-.55,-17,26,1,52,0x315b3a);
+  const ground=addBox(0,-.55,-17,26,1,52,0x58a946);
   ground.material.roughness=.95;
 
   for(let z=-39;z<=5;z+=6){
-    const strip=addBox(0,-.035,z,25.5,.05,2.4,z%12===0?0x3e7445:0x37683f);
+    const strip=addBox(0,-.035,z,25.5,.05,2.4,z%12===0?0x72c957:0x63b94d);
     strip.material.roughness=1;
   }
 
   const routes=[
-    [-8,1.1,-5,5,0.7,3,0x8b5cf6],
-    [7,2.0,-10,4.5,.7,3,0x4f8fd8],
-    [-5,3.0,-17,4,.7,3,0x8b5cf6],
-    [5,4.1,-24,5,.7,3,0x4f8fd8],
-    [-5,5.3,-31,4.5,.7,3,0x8b5cf6],
-    [4,6.5,-37,5,.7,3,0x4f8fd8]
+    [-8,1.1,-5,5,0.7,3,0xa56cff],
+    [7,2.0,-10,4.5,.7,3,0x58a9e8],
+    [-5,3.0,-17,4,.7,3,0xa56cff],
+    [5,4.1,-24,5,.7,3,0x58a9e8],
+    [-5,5.3,-31,4.5,.7,3,0xa56cff],
+    [4,6.5,-37,5,.7,3,0x58a9e8]
   ];
   for(const p of routes)addPlatform(...p);
 
-  addPlatform(0,1.8,-12,2.8,.65,2.5,0xf0b64b);
-  addPlatform(0,4.2,-21,2.5,.65,2.5,0xf0b64b);
-  addPlatform(0,6.8,-34,2.4,.65,2.4,0xf0b64b);
+  addPlatform(0,1.8,-12,2.8,.65,2.5,0xffc84d);
+  addPlatform(0,4.2,-21,2.5,.65,2.5,0xffc84d);
+  addPlatform(0,6.8,-34,2.4,.65,2.4,0xffc84d);
 
   for(let i=0;i<9;i++){
     const x=-10+(i%3)*10,z=-2-Math.floor(i/3)*12;
@@ -147,6 +145,45 @@ function createWorld(){
 
   createCoins();
   createEnemies();
+
+
+  // Elementos de cenário para dar a sensação de um grande mundo 3D de plataforma.
+  function cloud(x,y,z,s=1){
+    const g=new THREE.Group();
+    for(const [ox,oy,oz,r] of [[0,0,0,1.1],[1.15,.08,0,.9],[-1.1,.05,0,.82],[.25,.45,.1,.9]]){
+      const puff=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1}));
+      puff.position.set(ox*s,oy*s,oz*s);g.add(puff);
+    }
+    g.position.set(x,y,z);scene.add(g);decor.push(g);
+  }
+  cloud(-8,9,-10,1.2); cloud(6,10,-20,1.45); cloud(-7,8,-30,1.05); cloud(7,11,-38,1.25);
+
+  function hill(x,z,s,c){
+    const hill=new THREE.Mesh(new THREE.ConeGeometry(5*s,7*s,32),mat(c));
+    hill.position.set(x,3.0*s,z);hill.scale.y=.72;scene.add(hill);decor.push(hill);
+  }
+  hill(-11,-8,1.2,0x3f9a55); hill(11,-18,1.4,0x347f50); hill(-11,-31,1.35,0x4ca95b);
+
+  // Blocos suspensos e "caixas surpresa" são formas originais do FELPIX.
+  const blocks=[
+    [-3,2.7,-9,0xffc84d],[-1.6,2.7,-9,0xffc84d],[6,3.7,-14,0xa56cff],
+    [2,5.0,-23,0xffc84d],[-7,6.3,-29,0xa56cff],[1.5,7.8,-35,0xffc84d]
+  ];
+  for(const [x,y,z,c] of blocks){
+    const b=addBox(x,y,z,.72,.72,.72,c);
+    b.material.emissive=new THREE.Color(c).multiplyScalar(.12);
+  }
+
+  // Tubos decorativos: inspiração de jogos de plataforma, com identidade própria.
+  function tube(x,z,h=1.7,c=0x2d9b59){
+    const g=new THREE.Group();
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,h,20),mat(c));
+    body.position.y=h/2-.05;g.add(body);
+    const rim=new THREE.Mesh(new THREE.CylinderGeometry(.86,.86,.28,20),mat(0x43c06d));
+    rim.position.y=h-.05;g.add(rim);
+    g.position.set(x,0,z);scene.add(g);decor.push(g);
+  }
+  tube(-9,-13,2.1); tube(9,-27,2.6); tube(-9,-39,2.0);
 
   const flagPole=addBox(8,3.8,-40,.16,7.6,.16,0xd8d8dc);
   const flag=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.25),new THREE.MeshStandardMaterial({color:0x9b6cff,side:THREE.DoubleSide}));
@@ -192,7 +229,7 @@ function createEnemies(){
 
 function init(){
   scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x77cfff);
+  scene.background=new THREE.Color(0x72cfff);
   scene.fog=new THREE.Fog(0x77cfff,22,70);
 
   camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,120);
@@ -223,10 +260,10 @@ function bindHold(id,name){
   const el=document.getElementById(id);
   const down=e=>{e.preventDefault();setKey(name,true)};
   const up=e=>{e.preventDefault();setKey(name,false)};
-  el.addEventListener('pointerdown',down);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('pointerleave',up);
+  el.addEventListener('pointerdown',e=>{el.setPointerCapture?.(e.pointerId);down(e)});el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
 }
 function bindControls(){
-  bindHold('left','left');bindHold('right','right');bindHold('back','back');
+  bindHold('left','left');bindHold('right','right');bindHold('forward','forward');bindHold('back','back');
   document.getElementById('jump').addEventListener('pointerdown',e=>{e.preventDefault();doJump()});
   addEventListener('keydown',e=>{
     if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=true;
