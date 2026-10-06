@@ -206,6 +206,11 @@ function createWorld(){
   const path=new THREE.Mesh(new THREE.BoxGeometry(7.4,.08,190),sand);
   path.position.set(0,-.34,-84);path.receiveShadow=true;scene.add(path);
 
+  // Piso de segurança real: acompanha o corredor visual e evita perda de vida
+  // logo no início ou ao errar uma plataforma. As plataformas elevadas continuam
+  // sendo detectadas normalmente pelo sistema de colisão.
+  platforms.push({mesh:null,top:0,x1:-4.4,x2:4.4,z1:-178,z2:10});
+
   // Base visual contínua sob todas as plataformas. Ela não altera a colisão
   // do gameplay, mas impede que a rota pareça uma sequência de blocos soltos.
   const safeRoute=new THREE.Mesh(new THREE.BoxGeometry(8.8,.32,184),material(0x3f7542,.95,.01));
