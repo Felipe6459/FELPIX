@@ -81,17 +81,60 @@ function showToast(t){toastEl.textContent=t;toastEl.classList.add('show');clearT
 
 function createPlayer(){
   player=new THREE.Group();player.position.set(0,1.25,6);body=new THREE.Group();player.add(body);
-  const torso=box(1.0,1.05,.72,0x7046c7);torso.position.y=.02;body.add(torso);
-  const belt=box(1.06,.14,.78,0xf0d04f);belt.position.y=-.42;body.add(belt);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.44,20,14),material(0xf2c49b));head.position.y=.78;body.add(head);
-  const cap=box(1.0,.2,.84,0x5b35b5);cap.position.y=1.11;body.add(cap);
-  const brim=box(1.1,.09,.36,0x9b6cff);brim.position.set(0,1.02,.39);body.add(brim);
+
+  // Personagem redesenhado: formas arredondadas, proporções de mascote e detalhes de rosto.
+  const skin=material(0xf2b995,.55,.02);
+  const suit=material(0x6541c7,.42,.12);
+  const suit2=material(0x8b63ee,.38,.16);
+  const dark=material(0x241735,.34,.12);
+  const gold=material(0xffd45a,.3,.35);
+  const white=material(0xffffff,.28,.02);
+
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.46,.62,8,18),suit);
+  torso.scale.set(1.05,1.15,.78);torso.position.y=.02;body.add(torso);
+
+  const chest=new THREE.Mesh(new THREE.SphereGeometry(.43,20,14),suit2);
+  chest.scale.set(1.02,.72,.62);chest.position.set(0,.18,.16);body.add(chest);
+
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.16,.18,.22,16),skin);
+  neck.position.y=.57;body.add(neck);
+
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.48,24,18),skin);
+  head.scale.set(1,.98,.92);head.position.y=.92;body.add(head);
+
+  // Cabelo e boné com volume, em vez do antigo bloco quadrado.
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.5,20,14),dark);
+  hair.scale.set(1.02,.62,.96);hair.position.set(0,1.18,-.03);body.add(hair);
+
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(.51,20,12,0,Math.PI*2,0,Math.PI*.48),suit);
+  cap.scale.set(1.03,.7,1.02);cap.position.set(0,1.29,.02);body.add(cap);
+  const brim=new THREE.Mesh(new THREE.SphereGeometry(.3,18,10),suit2);
+  brim.scale.set(1.65,.22,.7);brim.position.set(0,1.2,.38);body.add(brim);
+
   for(const s of [-1,1]){
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(.067,12,8),material(0xffffff));eye.position.set(s*.16,.83,.4);body.add(eye);
-    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.029,10,8),material(0x17131e));pupil.position.set(s*.16,.83,.455);body.add(pupil);
-    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.11,.43,6,10),material(0xf2c49b));arm.position.set(s*.59,.03,0);arm.rotation.z=s*.25;arm.name='arm'+s;body.add(arm);
-    const boot=new THREE.Mesh(new THREE.BoxGeometry(.35,.25,.56),material(0x34205e));boot.position.set(s*.25,-.58,.1);boot.name='boot'+s;body.add(boot);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.082,14,10),white);
+    eye.position.set(s*.17,.96,.425);body.add(eye);
+    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.038,12,8),dark);
+    pupil.position.set(s*.17,.96,.495);body.add(pupil);
+    const shoe=new THREE.Mesh(new THREE.SphereGeometry(.25,16,10),dark);
+    shoe.scale.set(1.05,.65,1.45);shoe.position.set(s*.25,-.63,.18);
+    shoe.name='boot'+s;body.add(shoe);
+    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.13,.34,6,12),suit);
+    leg.position.set(s*.25,-.38,.02);leg.name='leg'+s;body.add(leg);
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.115,.46,6,12),skin);
+    arm.position.set(s*.58,.03,.03);arm.rotation.z=s*.25;arm.name='arm'+s;body.add(arm);
+    const glove=new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),white);
+    glove.position.set(s*.69,-.27,.05);body.add(glove);
   }
+
+  const belt=new THREE.Mesh(new THREE.TorusGeometry(.43,.065,8,24),gold);
+  belt.rotation.x=Math.PI/2;belt.scale.z=.8;belt.position.y=-.31;body.add(belt);
+  const badge=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),gold);
+  badge.position.set(0,.13,.49);badge.rotation.y=Math.PI/4;body.add(badge);
+
+  const backpack=new THREE.Mesh(new THREE.SphereGeometry(.35,16,12),suit);
+  backpack.scale.set(.9,1,.45);backpack.position.set(0,.04,-.42);body.add(backpack);
+
   shadow=new THREE.Mesh(new THREE.CircleGeometry(.64,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));
   shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.22;player.add(shadow);scene.add(player);
 }
