@@ -234,7 +234,7 @@ function createWorld(){
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*s,.34*s,1.8*s,12),dirt);
     trunk.position.y=.9*s;trunk.castShadow=true;g.add(trunk);
     [[0,2.0,1.0],[-.55,1.75,.72],[.55,1.78,.74],[0,2.55,.72]].forEach(([ox,oy,r])=>{
-      const c=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),i%2?grass2:grass);c.position.set(ox*s,oy*s,0);c.castShadow=true;g.add(c);
+      const c=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),(Math.floor(z)%2===0?grass2:grass));c.position.set(ox*s,oy*s,0);c.castShadow=true;g.add(c);
     });
     g.position.set(x,0,z);scene.add(g);decor.push(g);
   }
