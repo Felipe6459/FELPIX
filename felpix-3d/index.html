@@ -426,6 +426,14 @@ function updateMovement(dt){
     const newBottom=player.position.y-1.25;
     const oldBottom=oldY-1.25;
     let landing=null;
+
+    // Piso contínuo do percurso. Abaixo dele o personagem não deve perder vida.
+    // Ele funciona como chão físico principal; as plataformas elevadas continuam
+    // tendo prioridade quando o personagem está descendo sobre elas.
+    if(player.position.x>-4.4&&player.position.x<4.4&&
+       player.position.z>-178&&player.position.z<10&&oldBottom>=-.18&&newBottom<=.22){
+      landing={top:0};
+    }
     for(const p of platforms){
       const insideX=player.position.x>p.x1-.45&&player.position.x<p.x2+.45;
       const insideZ=player.position.z>p.z1-.45&&player.position.z<p.z2+.45;
@@ -439,7 +447,7 @@ function updateMovement(dt){
       grounded=true;
     }
   }
-  if(player.position.y<-2.2){loseLife();return false}
+  if(player.position.y<-6){loseLife();return false}
   if(moveDir.lengthSq()>.01){player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,Math.atan2(moveDir.x,moveDir.z),Math.min(1,dt*12));}
   const runningAnim=grounded&&sp>1;
   body.position.y=runningAnim?Math.sin(performance.now()*.018*sp)*.045:THREE.MathUtils.lerp(body.position.y,0,dt*8);
