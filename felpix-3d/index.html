@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>FELPIX 3D — A Ilha dos Cristais</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07101d;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090817;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}
 #game{position:relative;width:100%;height:100%}canvas{display:block;width:100%;height:100%}
 .hud{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;flex-wrap:wrap}
 .badge{padding:8px 12px;border:1px solid #ffffff35;border-radius:15px;background:#07101dcc;backdrop-filter:blur(8px);font-weight:900;text-shadow:0 2px 3px #000;box-shadow:0 8px 24px #0005}
 .badge b{color:#d8b9ff}.progress{position:absolute;z-index:5;top:61px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:99px;background:#07101db8;border:1px solid #ffffff25;font-size:12px;font-weight:900;white-space:nowrap}
 #power{color:#ffe36a}
-.overlay{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,#321a58e8,#06101ce8 72%)}
-.panel{width:min(92%,470px);padding:30px 24px;text-align:center;border:1px solid #b58aff66;border-radius:30px;background:linear-gradient(160deg,#20263af7,#0b1322f7);box-shadow:0 25px 80px #000b}
+.overlay{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#51248eeF,#100d28f2 58%,#050714fa 100%)}
+.panel{width:min(92%,470px);padding:30px 24px;text-align:center;border:1px solid #b58aff66;border-radius:30px;background:linear-gradient(160deg,#241a43f7,#0a1024f7);box-shadow:0 25px 80px #000b}
 .panel h1{margin:0 0 4px;font-size:50px;letter-spacing:-2px}.panel h2{margin:0 0 10px;color:#e0d1ff}.panel p{margin:9px 0 19px;color:#cbd2e2;line-height:1.45}
 .start{border:0;border-radius:18px;padding:15px 25px;background:linear-gradient(135deg,#a06cff,#5b35c5);color:#fff;font-weight:1000;font-size:18px;box-shadow:0 9px 22px #5b35c566}
 .small{margin-top:14px!important;font-size:12px;color:#8f9bb0!important}
@@ -234,17 +234,67 @@ function createWorld(){
   const gate=addGate(-178);
   return gate;
 }
+
+function applyVisualUpgrade(){
+  // Passe visual independente: não altera colisões, posições ou regras da fase.
+  const cyanGlow=new THREE.MeshStandardMaterial({color:0x45eaff,emissive:0x16bde8,emissiveIntensity:1.05,roughness:.28,metalness:.35});
+  const violetGlow=new THREE.MeshStandardMaterial({color:0x9c69ff,emissive:0x5520c8,emissiveIntensity:.75,roughness:.3,metalness:.3});
+  const goldGlow=new THREE.MeshStandardMaterial({color:0xffd96a,emissive:0xa85b0a,emissiveIntensity:.48,roughness:.3,metalness:.28});
+  // Acabamento luminoso fino nas bordas das plataformas já existentes.
+  for(const p of platforms){
+    const g=p.mesh.geometry.parameters;
+    const w=g.width||1,d=g.depth||1;
+    const y=p.mesh.position.y-(g.height||.7)/2+.035;
+    const thickness=.075;
+    const edge=(x,z,ew,ed)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(ew,.055,ed),cyanGlow);m.position.set(x,y,z);m.castShadow=false;m.receiveShadow=false;scene.add(m)};
+    edge(p.mesh.position.x-w/2,p.mesh.position.z,thickness,d);
+    edge(p.mesh.position.x+w/2,p.mesh.position.z,thickness,d);
+    edge(p.mesh.position.x,p.mesh.position.z-d/2,w,thickness);
+    edge(p.mesh.position.x,p.mesh.position.z+d/2,w,thickness);
+    p.mesh.castShadow=true;p.mesh.receiveShadow=true;
+  }
+  // Detalhes novos no personagem, sem substituir o modelo nem a animação atual.
+  const badge=new THREE.Mesh(new THREE.OctahedronGeometry(.19,0),goldGlow);
+  badge.position.set(0,.12,.39);body.add(badge);
+  const leftPad=new THREE.Mesh(new THREE.SphereGeometry(.19,12,8),violetGlow);
+  leftPad.scale.set(1.25,.7,1);leftPad.position.set(-.53,.42,0);body.add(leftPad);
+  const rightPad=leftPad.clone();rightPad.position.x=.53;body.add(rightPad);
+  const backpack=new THREE.Mesh(new THREE.BoxGeometry(.48,.55,.22),violetGlow);
+  backpack.position.set(0,.1,-.43);body.add(backpack);
+  // Céu estrelado leve para dar profundidade sem imagens externas.
+  const positions=[];
+  for(let i=0;i<420;i++){
+    const x=(Math.random()-.5)*115,y=8+Math.random()*48,z=-Math.random()*205+25;
+    positions.push(x,y,z);
+  }
+  const starGeo=new THREE.BufferGeometry();starGeo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xe5e5ff,size:.13,transparent:true,opacity:.8,sizeAttenuation:true}));
+  scene.add(stars);
+  // Fragmentos de cristal nas laterais reforçam a identidade violeta/ciano.
+  for(let i=0;i<30;i++){
+    const z=2-i*5.9,side=i%2===0?-1:1,x=side*(5.4+(i%3)*.42);
+    const shard=new THREE.Mesh(new THREE.OctahedronGeometry(.32+(i%4)*.09,0),i%2?violetGlow:cyanGlow);
+    shard.position.set(x,.55+(i%3)*.25,z);shard.rotation.set(.2*i,.35*i,.12*i);shard.scale.y=1.8;
+    scene.add(shard);
+  }
+  // Luzes de preenchimento coloridas para os cristais existentes.
+  scene.add(new THREE.PointLight(0x4ddfff,18,28,2).translateX(-3).translateY(5).translateZ(-10));
+  scene.add(new THREE.PointLight(0x9b5cff,22,34,2).translateX(3).translateY(6).translateZ(-42));
+  scene.add(new THREE.PointLight(0x4ddfff,20,34,2).translateX(-2).translateY(6).translateZ(-82));
+  scene.add(new THREE.PointLight(0x9b5cff,24,38,2).translateX(2).translateY(7).translateZ(-132));
+}
+
 function showFatal(e){const box=document.getElementById('fatal'),txt=document.getElementById('fatalText');if(!box||!txt)return;txt.textContent='Erro ao iniciar o 3D: '+(e&&e.message?e.message:String(e));box.classList.remove('hidden')}
 addEventListener('error',e=>showFatal(e.error||e.message));addEventListener('unhandledrejection',e=>showFatal(e.reason));
 function init(){
   try{
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x72cfff);scene.fog=new THREE.Fog(0x77cfff,25,95);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x171b49);scene.fog=new THREE.Fog(0x4b4a91,42,145);
   camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);camera.position.set(0,6.5,13);
-  renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   clock=new THREE.Clock();
-  scene.add(new THREE.HemisphereLight(0xdff5ff,0x26331e,2.25));
-  const sun=new THREE.DirectionalLight(0xfff0c7,3.2);sun.position.set(-12,22,12);sun.castShadow=false;scene.add(sun);
-  createPlayer();createWorld();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
+  scene.add(new THREE.HemisphereLight(0xbccaff,0x20143d,2.0));
+  const sun=new THREE.DirectionalLight(0xffe4ff,3.0);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;scene.add(sun);scene.add(new THREE.PointLight(0x6e56ff,34,70,2).position.set(0,10,-35));
+  createPlayer();createWorld();applyVisualUpgrade();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
   }catch(e){showFatal(e);throw e}
 }
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
