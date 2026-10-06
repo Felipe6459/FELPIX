@@ -193,88 +193,109 @@ function addGate(z){
 }
 
 function createWorld(){
-  // Fase linear: um único caminho para frente, com saltos, blocos, canos,
-  // inimigos e plataformas no estilo clássico de aventura de plataforma.
-  // Área inicial segura. Depois dela, os vãos obrigam o jogador a saltar.
-  addPlatform(0,-.35,5,15,.7,10,0x5aa447);
+  // Reconstrução visual da ilha: o gameplay continua linear, mas o cenário
+  // deixa de ser uma coleção de cubos e passa a ter terreno, rochas, árvores,
+  // caminhos, arcos e plataformas com formas orgânicas.
+  const grass=material(0x4f9b50,.9,.02), grass2=material(0x6dbd5b,.86,.02);
+  const dirt=material(0x8b5b38,.95,.01), rock=material(0x4c5668,.8,.04);
+  const rock2=material(0x687386,.72,.08), sand=material(0xd8b66c,.9,.01);
 
-  // Plataformas da rota principal: sempre em linha reta no eixo Z.
+  // Ilha-base: grande terreno contínuo, com bordas elevadas.
+  const island=new THREE.Mesh(new THREE.BoxGeometry(19,.9,194),grass);
+  island.position.set(0,-.82,-84);island.receiveShadow=true;scene.add(island);
+  const path=new THREE.Mesh(new THREE.BoxGeometry(7.4,.08,190),sand);
+  path.position.set(0,-.34,-84);path.receiveShadow=true;scene.add(path);
+
+  // Plataformas elevadas continuam sendo as áreas de salto do gameplay.
   const route=[
-    [0,1.15,-5,7.2,.7,4.4,0xa56cff],
-    [0,1.35,-9.0,7.2,.7,4.6,0x55aeea],
-    [0,1.8,-13.0,7.0,.7,4.4,0xa56cff],
-    [0,2.35,-18.0,6.4,.7,4.4,0x55aeea],
-    [0,1.3,-40,7.4,.7,3.0,0xa56cff],
-    [0,2.0,-49,5.8,.7,3.0,0x55aeea],
-    [0,2.8,-58,6.2,.7,3.0,0xa56cff],
-    [0,1.45,-68,7.4,.7,3.0,0x55aeea],
-    [0,2.3,-78,5.8,.7,3.0,0xa56cff],
-    [0,3.0,-88,6.4,.7,3.0,0x55aeea],
-    [0,1.55,-99,7.4,.7,3.0,0xa56cff],
-    [0,2.4,-110,5.8,.7,3.0,0x55aeea],
-    [0,3.15,-121,6.2,.7,3.0,0xa56cff],
-    [0,1.65,-133,7.4,.7,3.0,0x55aeea],
-    [0,2.5,-145,6.0,.7,3.0,0xa56cff],
-    [0,3.25,-157,6.4,.7,3.0,0x55aeea],
-    [0,1.45,-169,7.5,.7,3.2,0xa56cff]
+    [0,.95,-7,6.6,.75,4.3,0x7d59c8],[0,1.25,-13,6.4,.75,4.0,0x4d9dd4],
+    [0,1.75,-19,6.0,.75,4.0,0x7d59c8],[0,2.2,-26,5.7,.75,3.8,0x4d9dd4],
+    [0,1.15,-38,6.6,.75,3.0,0x7d59c8],[0,1.8,-48,5.7,.75,3.0,0x4d9dd4],
+    [0,2.5,-58,5.9,.75,3.0,0x7d59c8],[0,1.3,-69,6.6,.75,3.0,0x4d9dd4],
+    [0,2.15,-80,5.8,.75,3.0,0x7d59c8],[0,2.8,-91,6.1,.75,3.0,0x4d9dd4],
+    [0,1.4,-103,6.7,.75,3.0,0x7d59c8],[0,2.15,-115,5.8,.75,3.0,0x4d9dd4],
+    [0,2.85,-127,6.0,.75,3.0,0x7d59c8],[0,1.45,-140,6.7,.75,3.0,0x4d9dd4],
+    [0,2.25,-153,5.9,.75,3.0,0x7d59c8],[0,3.0,-165,6.2,.75,3.0,0x4d9dd4]
   ];
   route.forEach(p=>addPlatform(...p));
 
-  // Blocos amarelos e "?" originais do FELPIX.
-  [[-2.2,2.55,-9],[2.2,2.55,-18],[-1.8,3.15,-27],[1.8,3.2,-37],
-   [-2.1,2.9,-52],[2.1,3.65,-62],[-1.8,2.95,-82],[2.0,3.8,-94],
-   [-2.0,3.1,-115],[2.0,3.85,-126],[-1.8,3.25,-148],[2.0,4.0,-160]]
-   .forEach(([x,y,z],i)=>{
-     const b=addBox(x,y,z,.8,.8,.8,i%3===0?0xffc84d:0xffd84a);
-     b.material.emissive=new THREE.Color(0xffc84d).multiplyScalar(.12);
-   });
-
-  // Canos e colunas decorativas, todos alinhados ao mesmo percurso.
-  [[-5,-16,1.7],[5,-34,1.9],[-5,-55,1.6],[5,-73,2.0],[-5,-91,1.8],
-   [5,-108,1.7],[-5,-130,2.0],[5,-151,1.8]].forEach(([x,z,h])=>{
-     addBox(x,h/2,z,1.25,h,1.25,0x2f9e55);
-     addBox(x,h+.08,z,1.55,.28,1.55,0x55c96b);
-   });
-
-  // Moedas/cristais: posicionados no caminho para incentivar saltos.
-  [[0,2.1,-5],[0,2.55,-13],[-1.6,3.0,-21],[1.6,3.35,-30],
-   [0,2.3,-40],[-1.5,3.0,-49],[1.5,3.75,-58],[0,2.4,-68],
-   [-1.5,3.35,-78],[1.5,4.05,-88],[0,2.45,-99],[-1.5,3.1,-110],
-   [1.5,3.95,-121],[0,2.55,-133],[-1.4,3.35,-145],[1.4,4.05,-157],
-   [0,2.35,-169],[0,4.1,-176]].forEach((p,i)=>addCrystal(...p,i===17?'big':'normal'));
-
-  // Inimigos originais, distribuídos no corredor linear.
-  createEnemy(2.2,-17);
-  createEnemy(-1.7,-24);
-  createEnemy(1.7,-43,'charger');
-  createEnemy(0,-54);
-  createEnemy(-1.8,-71,'charger');
-  createEnemy(1.7,-86);
-  createEnemy(0,-104,'charger');
-  createEnemy(-1.7,-119);
-  createEnemy(1.7,-138,'charger');
-  createEnemy(0,-153);
-  createEnemy(-1.5,-166,'charger');
-
-  // Árvores, colinas e nuvens nas laterais, sem criar caminhos alternativos.
-  [[-6.2,-8,1.0],[6.2,-20,1.15],[-6.2,-31,1.0],[6.2,-45,1.2],
-   [-6.2,-60,1.05],[6.2,-76,1.2],[-6.2,-96,1.05],[6.2,-114,1.2],
-   [-6.2,-132,1.1],[6.2,-149,1.2],[-6.2,-167,1.1]].forEach(a=>addTree(...a));
-  [[-4,8,-12,1.0],[4,9,-38,1.15],[-4,10,-66,1.0],[4,11,-101,1.2],
-   [-4,12,-139,1.0],[4,13,-170,1.2]].forEach(a=>addCloud(...a));
-
-  // Pequenos morros laterais para dar a leitura visual de fase clássica.
-  for(const [x,z,s,c] of [[-7,-25,1.1,0x3e9b57],[7,-50,1.2,0x347f50],[-7,-82,1.15,0x4ca95b],
-                          [7,-116,1.25,0x347f50],[-7,-151,1.15,0x4ca95b], [7,-174,1.2,0x347f50]]){
-    const h=new THREE.Mesh(new THREE.ConeGeometry(4*s,6*s,24),material(c));
-    h.position.set(x,2.3*s,z);h.scale.y=.75;scene.add(h);decor.push(h);
+  // Ilhotas/rochas laterais dão escala ao mundo.
+  for(let i=0;i<22;i++){
+    const z=2-i*8.1, side=i%2?-1:1, x=side*(6.3+(i%3)*.55);
+    const s=.7+(i%4)*.22;
+    const r=new THREE.Mesh(new THREE.DodecahedronGeometry(1.45*s,1),i%2?rock:rock2);
+    r.scale.set(1.35,.7,1.05);r.position.set(x,-.05,z);r.rotation.set(.2*i,.4*i,.12*i);
+    r.castShadow=true;r.receiveShadow=true;scene.add(r);decor.push(r);
   }
 
-  addBounce(0,-35);addBounce(0,-74);addBounce(0,-113);addBounce(0,-154);
+  // Árvores com tronco, copa em camadas e pequenas folhas.
+  function tree(x,z,s=1){
+    const g=new THREE.Group();
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*s,.34*s,1.8*s,12),dirt);
+    trunk.position.y=.9*s;trunk.castShadow=true;g.add(trunk);
+    [[0,2.0,1.0],[-.55,1.75,.72],[.55,1.78,.74],[0,2.55,.72]].forEach(([ox,oy,r])=>{
+      const c=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),i%2?grass2:grass);c.position.set(ox*s,oy*s,0);c.castShadow=true;g.add(c);
+    });
+    g.position.set(x,0,z);scene.add(g);decor.push(g);
+  }
+  for(let i=0;i<25;i++){
+    const z=1-i*6.8, side=i%2?-1:1;
+    tree(side*(5.2+(i%3)*.7),z,.72+(i%4)*.12);
+  }
+
+  // Rochas menores espalhadas na lateral.
+  for(let i=0;i<38;i++){
+    const z=3-i*4.7, side=i%2?-1:1, x=side*(4.4+(i%4)*.5);
+    const s=.16+(i%5)*.07;
+    const m=new THREE.Mesh(new THREE.IcosahedronGeometry(s*2,1),i%3?rock2:rock);
+    m.position.set(x,.15+s,z);m.rotation.set(i*.4,i*.7,i*.2);m.castShadow=true;scene.add(m);
+  }
+
+  // Arcos de pedra: pontos de referência visuais.
+  for(const z of [-32,-72,-108,-146]){
+    const a=new THREE.Mesh(new THREE.CylinderGeometry(.48,.7,3.8,12),rock);
+    a.position.set(-3.7,1.9,z);a.castShadow=true;scene.add(a);
+    const b=a.clone();b.position.x=3.7;scene.add(b);
+    const top=new THREE.Mesh(new THREE.BoxGeometry(7.9,.75,.7),rock2);
+    top.position.set(0,3.55,z);top.castShadow=true;scene.add(top);
+    const emblem=new THREE.Mesh(new THREE.OctahedronGeometry(.42),material(0x9e6cff,.3,.4));
+    emblem.position.set(0,3.9,z-.4);scene.add(emblem);
+  }
+
+  // Blocos de impulso visualmente arredondados.
+  [[-2.1,2.1,-13],[2.1,2.65,-26],[-1.9,3.0,-48],[1.9,3.75,-69],
+   [-2,3.0,-91],[2,3.6,-115],[-2,3.6,-140],[2,4.05,-165]].forEach(([x,y,z])=>{
+    const m=new THREE.Mesh(new THREE.BoxGeometry(.85,.85,.85),material(0xffca4d,.35,.25));
+    m.position.set(x,y,z);m.rotation.y=.18;m.castShadow=true;scene.add(m);
+  });
+
+  // Cristais com pedestal, para parecerem objetos de cenário e não apenas ícones.
+  [[0,2,-7],[0,2.45,-19],[-1.5,2.8,-28],[1.5,3.25,-38],
+   [0,2.35,-48],[-1.45,3.05,-58],[1.45,3.75,-69],[0,2.55,-80],
+   [-1.4,3.35,-91],[1.4,4.0,-103],[0,2.55,-115],[-1.4,3.45,-127],
+   [1.4,4.1,-140],[0,2.55,-153],[-1.35,3.55,-165],[0,4.1,-173]]
+   .forEach((p,i)=>{
+     const g=addCrystal(...p,i===15?'big':'normal');
+     const base=new THREE.Mesh(new THREE.CylinderGeometry(.36,.48,.2,12),material(0x33254f,.5,.25));
+     base.position.set(p[0],p[1]-.45,p[2]);base.castShadow=true;scene.add(base);
+   });
+
+  // Inimigos agora ganham pequenos chifres e corpo mais orgânico.
+  createEnemy(2.0,-22);createEnemy(-1.7,-43,'charger');createEnemy(1.7,-63);
+  createEnemy(-1.8,-83,'charger');createEnemy(1.8,-104);createEnemy(-1.7,-123,'charger');
+  createEnemy(1.7,-143);createEnemy(-1.6,-160,'charger');
+
+  addBounce(0,-33);addBounce(0,-74);addBounce(0,-112);addBounce(0,-151);
   addCheckpoint(-58);addCheckpoint(-121);
 
-  // Portão final substitui o castelo, mantendo identidade própria FELPIX.
+  // Entrada do santuário final.
   const gate=addGate(-178);
+
+  // Nuvens volumétricas no céu.
+  for(let i=0;i<12;i++){
+    addCloud((i%2?-1:1)*(3+i%4),8+(i%3)*1.2,-8-i*14,.8+(i%3)*.15);
+  }
+
   return gate;
 }
 
