@@ -209,7 +209,7 @@ function createWorld(){
   // Piso de segurança real: acompanha o corredor visual e evita perda de vida
   // logo no início ou ao errar uma plataforma. As plataformas elevadas continuam
   // sendo detectadas normalmente pelo sistema de colisão.
-  platforms.push({mesh:null,top:0,x1:-4.4,x2:4.4,z1:-178,z2:10});
+  platforms.push({mesh:path,top:0,x1:-4.4,x2:4.4,z1:-178,z2:10});
 
   // Base visual contínua sob todas as plataformas. Ela não altera a colisão
   // do gameplay, mas impede que a rota pareça uma sequência de blocos soltos.
