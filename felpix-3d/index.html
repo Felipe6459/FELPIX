@@ -293,7 +293,7 @@ function init(){
   renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   clock=new THREE.Clock();
   scene.add(new THREE.HemisphereLight(0xbccaff,0x20143d,2.0));
-  const sun=new THREE.DirectionalLight(0xffe4ff,3.0);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;scene.add(sun);scene.add(new THREE.PointLight(0x6e56ff,34,70,2).position.set(0,10,-35));
+  const sun=new THREE.DirectionalLight(0xffe4ff,3.0);sun.position.set(-12,22,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;scene.add(sun);const fillLight=new THREE.PointLight(0x6e56ff,18,70,2);fillLight.position.set(0,10,-35);scene.add(fillLight);
   createPlayer();createWorld();applyVisualUpgrade();bindControls();addEventListener('resize',resize);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z-3.8);renderer.render(scene,camera);renderer.setAnimationLoop(loop);
   }catch(e){showFatal(e);throw e}
 }
