@@ -70,7 +70,7 @@ const keys={left:false,right:false,forward:false,back:false};
 const stickInput={x:0,y:0};
 const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];
 let starItem=null;
-const world={minX:-7.5,maxX:7.5,minZ:-180,maxZ:10};
+const world={minX:-9,maxX:9,minZ:-154,maxZ:10};
 const up=new THREE.Vector3(0,1,0),camForward=new THREE.Vector3(),camRight=new THREE.Vector3(),moveDir=new THREE.Vector3();
 
 function material(c,rough=.75,metal=.05){return new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal})}
@@ -82,90 +82,63 @@ function showToast(t){toastEl.textContent=t;toastEl.classList.add('show');clearT
 function createPlayer(){
   player=new THREE.Group();
   player.position.set(0,1.25,6);
-  body=new THREE.Group();
-  player.add(body);
+  body=new THREE.Group();player.add(body);
 
-  // Mascote mais trabalhado: silhueta de aventureiro, rosto expressivo,
-  // roupa em camadas, luvas, botas, cinto, mochila e detalhes emissivos.
-  const skin=material(0xf0bd98,.48,.02);
-  const skinShadow=material(0xc98567,.62,.01);
-  const suit=material(0x4b2b9d,.38,.15);
-  const suitLight=material(0x8762ed,.32,.2);
-  const suitDark=material(0x292044,.52,.08);
-  const hair=material(0x342338,.68,.01);
-  const gold=material(0xffcf54,.28,.5);
-  const white=material(0xfffbf4,.22,.04);
-  const iris=material(0x43d8ee,.2,.45);
-  const black=material(0x171321,.25,.04);
-
+  // Aventureiro estilizado com silhueta limpa e proporções mais equilibradas.
+  const skin=material(0xe9b38d,.56,.01), hair=material(0x382638,.7,.01);
+  const jacket=material(0x4930a0,.42,.12), jacketLight=material(0x8065dc,.38,.16);
+  const pants=material(0x292c49,.62,.04), bootMat=material(0x242034,.48,.08);
+  const gold=material(0xffca55,.3,.32), white=material(0xfff8ec,.24,.02);
+  const eyeMat=material(0x202039,.3,.02), cyan=new THREE.MeshStandardMaterial({color:0x55eaff,emissive:0x168da8,emissiveIntensity:.45,roughness:.3,metalness:.25});
   const add=(geo,mat,x,y,z,sx=1,sy=1,sz=1,parent=body)=>{
-    const m=new THREE.Mesh(geo,mat);
-    m.position.set(x,y,z);m.scale.set(sx,sy,sz);
+    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);
     m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
   };
 
-  // Tronco e roupa com volumes sobrepostos em vez de uma única cápsula.
-  add(new THREE.CapsuleGeometry(.39,.62,8,18),suit,0,.02,0,1.1,1.05,.82);
-  add(new THREE.SphereGeometry(.405,22,16),suitLight,0,.17,.12,1.02,.66,.72);
-  add(new THREE.CylinderGeometry(.17,.19,.2,16),skin,0,.52,0);
-  add(new THREE.TorusGeometry(.37,.065,10,24),gold,0,-.31,0,1,1,.88);
-  add(new THREE.BoxGeometry(.19,.18,.07),gold,0,-.31,.35);
-  add(new THREE.OctahedronGeometry(.105,1),iris,0,.12,.47,1,1.15,.55);
-
-  // Pescoço, cabeça, queixo e orelhas.
-  add(new THREE.SphereGeometry(.43,28,20),skin,0,.91,.025,1,1.06,.92);
-  add(new THREE.SphereGeometry(.29,20,14),skinShadow,0,.72,.17,1,.42,.7);
-  for(const s of [-1,1]){
-    add(new THREE.SphereGeometry(.105,16,12),skin,s*.405,.9,0,.78,1,.65);
-    add(new THREE.SphereGeometry(.047,12,8),skinShadow,s*.44,.9,.025);
+  // Pernas, botas e sola.
+  for(const side of [-1,1]){
+    const leg=add(new THREE.CapsuleGeometry(.125,.34,5,12),pants,side*.19,-.43,0,1,1,.92);
+    leg.name=side<0?'boot-1':'boot1';
+    add(new THREE.BoxGeometry(.29,.17,.39),bootMat,side*.19,-.69,.09);
+    add(new THREE.BoxGeometry(.3,.045,.4),gold,side*.19,-.77,.09);
   }
-
-  // Cabelo e boné/tiara em camadas.
-  add(new THREE.SphereGeometry(.44,24,16),hair,0,1.12,-.035,1.03,.72,.98);
-  add(new THREE.SphereGeometry(.31,20,12),hair,-.23,1.14,.16,.75,.52,.68);
-  add(new THREE.SphereGeometry(.33,24,14,0,Math.PI*2,0,Math.PI*.47),suit,0,1.18,.02,1.12,1,.98);
-  add(new THREE.SphereGeometry(.28,20,12),suitLight,0,1.15,.27,1.08,.2,.5);
-  add(new THREE.TorusGeometry(.27,.035,8,24),gold,0,1.12,.3,1,.55,.45);
-
-  // Olhos com íris, brilho, sobrancelhas e sorriso discreto.
-  for(const s of [-1,1]){
-    add(new THREE.SphereGeometry(.095,18,12),white,s*.155,.94,.39,1,.92,.55);
-    add(new THREE.SphereGeometry(.052,16,12),iris,s*.155,.935,.438,1,1,.55);
-    add(new THREE.SphereGeometry(.027,12,8),black,s*.155,.935,.463,1,1,.5);
-    add(new THREE.SphereGeometry(.015,8,6),white,s*.17,.96,.477);
-    const brow=add(new THREE.CapsuleGeometry(.025,.105,4,8),hair,s*.155,1.075,.405);
-    brow.rotation.z=s*-.1;
+  // Tronco, colete e cinto.
+  add(new THREE.CapsuleGeometry(.31,.53,6,14),jacket,0,.02,0,1.08,1.05,.8);
+  add(new THREE.BoxGeometry(.12,.53,.035),jacketLight,0,.02,.265);
+  add(new THREE.TorusGeometry(.3,.045,8,20),gold,0,-.28,0,1,1,.82);
+  add(new THREE.BoxGeometry(.13,.13,.045),gold,0,-.28,.31);
+  // Pescoço e cabeça.
+  add(new THREE.CylinderGeometry(.12,.14,.18,14),skin,0,.42,0);
+  add(new THREE.SphereGeometry(.34,24,18),skin,0,.77,.015,1,.99,.9);
+  add(new THREE.SphereGeometry(.36,22,14),hair,0,.91,-.055,1.02,.63,.95);
+  add(new THREE.SphereGeometry(.29,20,12,0,Math.PI*2,0,Math.PI*.45),jacket,0,.98,.015,1.05,1,.98);
+  add(new THREE.TorusGeometry(.23,.025,7,20),gold,0,.94,.29,1,.6,.45);
+  for(const side of [-1,1]){
+    add(new THREE.SphereGeometry(.075,14,10),white,side*.125,.78,.302,1,.95,.5);
+    add(new THREE.SphereGeometry(.038,12,8),eyeMat,side*.125,.78,.335,1,1,.5);
+    const brow=add(new THREE.CapsuleGeometry(.018,.08,3,6),hair,side*.125,.89,.31);
+    brow.rotation.z=side*-.08;
+    add(new THREE.SphereGeometry(.07,12,8),skin,side*.33,.76,0,.65,1,.65);
   }
-  const smile=add(new THREE.TorusGeometry(.09,.018,6,16,Math.PI),skinShadow,0,.79,.407,1,.65,.45);
+  // Sorriso discreto.
+  const smile=add(new THREE.TorusGeometry(.07,.012,5,14,Math.PI),material(0x8c4b48),0,.64,.308,1,.65,.4);
   smile.rotation.z=Math.PI;
-
-  // Braços articulados visualmente, ombreiras e luvas.
-  for(const s of [-1,1]){
-    const shoulder=add(new THREE.SphereGeometry(.19,16,12),suitLight,s*.43,.35,0,1,.92,1);
-    const arm=add(new THREE.CapsuleGeometry(.105,.39,6,12),skin,s*.51,.08,.015,1,1,.92);
-    arm.name=s<0?'arm-1':'arm1';arm.rotation.z=s*-.12;
-    add(new THREE.SphereGeometry(.13,14,10),white,s*.55,-.18,.06);
-    add(new THREE.TorusGeometry(.12,.025,6,16),gold,s*.52,-.1,.04,1,.8,1);
+  // Braços simples, luvas e ombreiras; os nomes preservam a animação existente.
+  for(const side of [-1,1]){
+    add(new THREE.SphereGeometry(.145,14,10),jacketLight,side*.34,.23,0);
+    const arm=add(new THREE.CapsuleGeometry(.09,.36,5,10),skin,side*.42,-.015,.005);
+    arm.name=side<0?'arm-1':'arm1';arm.rotation.z=side*-.12;
+    add(new THREE.SphereGeometry(.115,12,8),bootMat,side*.44,-.25,.04);
+    add(new THREE.TorusGeometry(.1,.018,5,14),gold,side*.43,-.18,.03,1,.8,1);
   }
-
-  // Pernas e botas com sola clara, biqueira e cadarços.
-  for(const s of [-1,1]){
-    const leg=add(new THREE.CapsuleGeometry(.13,.32,6,12),suitDark,s*.19,-.48,.005);
-    leg.name=s<0?'boot-1':'boot1';
-    add(new THREE.SphereGeometry(.17,16,12),suitLight,s*.19,-.65,.025,.9,.72,.85);
-    add(new THREE.SphereGeometry(.205,16,10),suitDark,s*.19,-.78,.105,1.08,.55,1.35);
-    add(new THREE.BoxGeometry(.15,.025,.025),white,s*.19,-.68,.2);
-  }
-
-  // Mochila técnica, cantil e luzes laterais.
-  add(new THREE.SphereGeometry(.28,18,14),suitDark,0,.08,-.36,1,1.18,.7);
-  add(new THREE.BoxGeometry(.3,.32,.12),suitLight,0,.1,-.53);
-  add(new THREE.CylinderGeometry(.055,.055,.22,12),gold,.22,.1,-.44);
-  add(new THREE.SphereGeometry(.07,12,8),iris,-.27,.16,-.38);
-  const aura=add(new THREE.TorusGeometry(.56,.018,6,32),iris,0,-.95,0,1,.35,1);
+  // Mochila compacta com emblema luminoso.
+  add(new THREE.BoxGeometry(.34,.43,.17),pants,0,.04,-.29);
+  add(new THREE.BoxGeometry(.23,.27,.035),jacketLight,0,.05,-.39);
+  add(new THREE.OctahedronGeometry(.075,0),cyan,0,.07,-.42);
+  const aura=add(new THREE.TorusGeometry(.48,.014,5,28),cyan,0,-.91,0,1,.3,1);
   aura.rotation.x=Math.PI/2;
 
-  shadow=new THREE.Mesh(new THREE.CircleGeometry(.68,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.34}));
+  shadow=new THREE.Mesh(new THREE.CircleGeometry(.58,28),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));
   shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.22;player.add(shadow);scene.add(player);
 }
 function addPlatform(x,y,z,w,h,d,c){
@@ -222,122 +195,134 @@ function addGate(z){
 }
 
 function createWorld(){
-  // Reconstrução visual da ilha: o gameplay continua linear, mas o cenário
-  // deixa de ser uma coleção de cubos e passa a ter terreno, rochas, árvores,
-  // caminhos, arcos e plataformas com formas orgânicas.
-  const grass=material(0x4f9b50,.9,.02), grass2=material(0x6dbd5b,.86,.02);
-  const dirt=material(0x8b5b38,.95,.01), rock=material(0x4c5668,.8,.04);
-  const rock2=material(0x687386,.72,.08), sand=material(0xd8b66c,.9,.01);
-
-  // Ilha-base: grande terreno contínuo, com bordas elevadas.
-  const island=new THREE.Mesh(new THREE.BoxGeometry(19,.9,194),grass);
-  island.position.set(0,-.82,-84);island.receiveShadow=true;scene.add(island);
-  const path=new THREE.Mesh(new THREE.BoxGeometry(7.4,.08,190),sand);
-  path.position.set(0,-.34,-84);path.receiveShadow=true;scene.add(path);
-
-  // Piso de segurança real: acompanha o corredor visual e evita perda de vida
-  // logo no início ou ao errar uma plataforma. As plataformas elevadas continuam
-  // sendo detectadas normalmente pelo sistema de colisão.
-  platforms.push({mesh:path,top:0,x1:-4.4,x2:4.4,z1:-178,z2:10});
-
-  // Base visual contínua sob todas as plataformas. Ela não altera a colisão
-  // do gameplay, mas impede que a rota pareça uma sequência de blocos soltos.
-  const safeRoute=new THREE.Mesh(new THREE.BoxGeometry(8.8,.32,184),material(0x3f7542,.95,.01));
-  safeRoute.position.set(0,-.13,-84);safeRoute.receiveShadow=true;scene.add(safeRoute);
-
-  // Plataformas elevadas continuam sendo as áreas de salto do gameplay.
+  // Nova fase: Trilha das Ilhas Verdes. Plataformas largas, alturas suaves,
+  // pequenos intervalos e referências visuais claras para o jogador.
+  const grass=material(0x4eaa58,.9,.01), grassLight=material(0x83d66b,.86,.01);
+  const soil=material(0x805039,.96,.01), stone=material(0x657287,.82,.04);
+  const wood=material(0x8d603c,.82,.02), gold=material(0xffd15a,.3,.3);
+  const glow=new THREE.MeshStandardMaterial({color:0x69f0ff,emissive:0x148ea8,emissiveIntensity:.65,roughness:.25,metalness:.3});
   const route=[
-    [0,.95,-7,6.6,.75,4.3,0x7d59c8],[0,1.25,-13,6.4,.75,4.0,0x4d9dd4],
-    [0,1.75,-19,6.0,.75,4.0,0x7d59c8],[0,2.2,-26,5.7,.75,3.8,0x4d9dd4],
-    [0,1.15,-38,6.6,.75,3.0,0x7d59c8],[0,1.8,-48,5.7,.75,3.0,0x4d9dd4],
-    [0,2.5,-58,5.9,.75,3.0,0x7d59c8],[0,1.3,-69,6.6,.75,3.0,0x4d9dd4],
-    [0,2.15,-80,5.8,.75,3.0,0x7d59c8],[0,2.8,-91,6.1,.75,3.0,0x4d9dd4],
-    [0,1.4,-103,6.7,.75,3.0,0x7d59c8],[0,2.15,-115,5.8,.75,3.0,0x4d9dd4],
-    [0,2.85,-127,6.0,.75,3.0,0x7d59c8],[0,1.45,-140,6.7,.75,3.0,0x4d9dd4],
-    [0,2.25,-153,5.9,.75,3.0,0x7d59c8],[0,3.0,-165,6.2,.75,3.0,0x4d9dd4]
+    {x:0,z:5,top:0,w:10.5,d:7.0},
+    {x:0,z:-1.4,top:0,w:8.2,d:5.8},
+    {x:.4,z:-7.6,top:.15,w:8.0,d:5.8},
+    {x:1.0,z:-13.8,top:.3,w:8.0,d:5.8},
+    {x:.7,z:-20.0,top:.45,w:8.0,d:5.8},
+    {x:0,z:-26.2,top:.25,w:8.3,d:5.8},
+    {x:-.7,z:-32.4,top:.1,w:8.0,d:5.8},
+    {x:-1.0,z:-38.6,top:.35,w:8.0,d:5.8},
+    {x:-.4,z:-44.8,top:.55,w:8.0,d:5.8},
+    {x:.4,z:-51.0,top:.35,w:8.3,d:5.8},
+    {x:1.0,z:-57.2,top:.15,w:8.0,d:5.8},
+    {x:.6,z:-63.4,top:.4,w:8.0,d:5.8},
+    {x:0,z:-69.6,top:.65,w:8.0,d:5.8},
+    {x:-.8,z:-75.8,top:.45,w:8.2,d:5.8},
+    {x:-1.0,z:-82.0,top:.25,w:8.0,d:5.8},
+    {x:-.3,z:-88.2,top:.45,w:8.0,d:5.8},
+    {x:.5,z:-94.4,top:.7,w:8.0,d:5.8},
+    {x:1.0,z:-100.6,top:.45,w:8.0,d:5.8},
+    {x:.5,z:-106.8,top:.25,w:8.2,d:5.8},
+    {x:-.4,z:-113.0,top:.45,w:8.0,d:5.8},
+    {x:-1.0,z:-119.2,top:.7,w:8.0,d:5.8},
+    {x:-.4,z:-125.4,top:.45,w:8.2,d:5.8},
+    {x:.4,z:-131.6,top:.25,w:8.0,d:5.8},
+    {x:0,z:-137.8,top:.25,w:10.5,d:7.2}
   ];
-  route.forEach(p=>addPlatform(...p));
-
-  // Ilhotas/rochas laterais dão escala ao mundo.
-  for(let i=0;i<22;i++){
-    const z=2-i*8.1, side=i%2?-1:1, x=side*(6.3+(i%3)*.55);
-    const s=.7+(i%4)*.22;
-    const r=new THREE.Mesh(new THREE.DodecahedronGeometry(1.45*s,1),i%2?rock:rock2);
-    r.scale.set(1.35,.7,1.05);r.position.set(x,-.05,z);r.rotation.set(.2*i,.4*i,.12*i);
-    r.castShadow=true;r.receiveShadow=true;scene.add(r);decor.push(r);
-  }
-
-  // Árvores com tronco, copa em camadas e pequenas folhas.
-  function tree(x,z,s=1){
-    const g=new THREE.Group();
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*s,.34*s,1.8*s,12),dirt);
-    trunk.position.y=.9*s;trunk.castShadow=true;g.add(trunk);
-    [[0,2.0,1.0],[-.55,1.75,.72],[.55,1.78,.74],[0,2.55,.72]].forEach(([ox,oy,r])=>{
-      const c=new THREE.Mesh(new THREE.SphereGeometry(r*s,16,12),(Math.floor(z)%2===0?grass2:grass));c.position.set(ox*s,oy*s,0);c.castShadow=true;g.add(c);
-    });
-    g.position.set(x,0,z);scene.add(g);decor.push(g);
-  }
-  for(let i=0;i<25;i++){
-    const z=1-i*6.8, side=i%2?-1:1;
-    tree(side*(5.2+(i%3)*.7),z,.72+(i%4)*.12);
-  }
-
-  // Rochas menores espalhadas na lateral.
-  for(let i=0;i<38;i++){
-    const z=3-i*4.7, side=i%2?-1:1, x=side*(4.4+(i%4)*.5);
-    const s=.16+(i%5)*.07;
-    const m=new THREE.Mesh(new THREE.IcosahedronGeometry(s*2,1),i%3?rock2:rock);
-    m.position.set(x,.15+s,z);m.rotation.set(i*.4,i*.7,i*.2);m.castShadow=true;scene.add(m);
-  }
-
-  // Arcos de pedra: pontos de referência visuais.
-  for(const z of [-32,-72,-108,-146]){
-    const a=new THREE.Mesh(new THREE.CylinderGeometry(.48,.7,3.8,12),rock);
-    a.position.set(-3.7,1.9,z);a.castShadow=true;scene.add(a);
-    const b=a.clone();b.position.x=3.7;scene.add(b);
-    const top=new THREE.Mesh(new THREE.BoxGeometry(7.9,.75,.7),rock2);
-    top.position.set(0,3.55,z);top.castShadow=true;scene.add(top);
-    const emblem=new THREE.Mesh(new THREE.OctahedronGeometry(.42),material(0x9e6cff,.3,.4));
-    emblem.position.set(0,3.9,z-.4);scene.add(emblem);
-  }
-
-  // Blocos de impulso visualmente arredondados.
-  [[-2.1,2.1,-13],[2.1,2.65,-26],[-1.9,3.0,-48],[1.9,3.75,-69],
-   [-2,3.0,-91],[2,3.6,-115],[-2,3.6,-140],[2,4.05,-165]].forEach(([x,y,z])=>{
-    const m=new THREE.Mesh(new THREE.BoxGeometry(.85,.85,.85),material(0xffca4d,.35,.25));
-    m.position.set(x,y,z);m.rotation.y=.18;m.castShadow=true;scene.add(m);
+  const tops=[];
+  route.forEach((p,i)=>{
+    // A colisão usa a laje marrom; a tampa verde dá acabamento de ilha.
+    addPlatform(p.x,p.top-.42,p.z,p.w,.84,p.d,0x805039);
+    const cap=addBox(p.x,p.top-.055,p.z,p.w+.08,.13,p.d+.08,0x4eaa58);
+    cap.receiveShadow=true;
+    const edge=addBox(p.x,p.top-.14,p.z,p.w,.08,p.d,0x83d66b);
+    edge.material=grassLight;
+    tops.push(p.top);
+    // Faixas de pedra e madeira deixam a trilha legível sem poluir o caminho.
+    if(i>0&&i<route.length-1&&i%4===2){
+      const plank=addBox(p.x,p.top+.025,p.z,p.w*.62,.045,.22,0x8d603c);
+      plank.rotation.y=.04;
+    }
+    // Pequenos cristais luminosos nas bordas das ilhas.
+    for(const side of [-1,1]){
+      if(i%3===1){
+        const shard=new THREE.Mesh(new THREE.OctahedronGeometry(.2+(i%2)*.07,0),glow);
+        shard.position.set(p.x+side*(p.w*.39),p.top+.42,p.z-.2);
+        shard.scale.y=1.6;shard.rotation.z=side*.18;scene.add(shard);decor.push(shard);
+      }
+    }
   });
 
-  // Cristais com pedestal, para parecerem objetos de cenário e não apenas ícones.
-  [[0,2,-7],[0,2.45,-19],[-1.5,2.8,-28],[1.5,3.25,-38],
-   [0,2.35,-48],[-1.45,3.05,-58],[1.45,3.75,-69],[0,2.55,-80],
-   [-1.4,3.35,-91],[1.4,4.0,-103],[0,2.55,-115],[-1.4,3.45,-127],
-   [1.4,4.1,-140],[0,2.55,-153],[-1.35,3.55,-165],[0,4.1,-173]]
-   .forEach((p,i)=>{
-     const g=addCrystal(...p,i===15?'big':'normal');
-     const base=new THREE.Mesh(new THREE.CylinderGeometry(.36,.48,.2,12),material(0x33254f,.5,.25));
-     base.position.set(p[0],p[1]-.45,p[2]);base.castShadow=true;scene.add(base);
-   });
-
-  // Inimigos agora ganham pequenos chifres e corpo mais orgânico.
-  createEnemy(2.0,-22);createEnemy(-1.7,-43,'charger');createEnemy(1.7,-63);
-  createEnemy(-1.8,-83,'charger');createEnemy(1.8,-104);createEnemy(-1.7,-123,'charger');
-  createEnemy(1.7,-143);createEnemy(-1.6,-160,'charger');
-
-  addBounce(0,-33);addBounce(0,-74);addBounce(0,-112);addBounce(0,-151);
-  addCheckpoint(-58);addCheckpoint(-121);
-
-  // Entrada do santuário final.
-  const gate=addGate(-178);
-
-  // Nuvens volumétricas no céu.
-  for(let i=0;i<12;i++){
-    addCloud((i%2?-1:1)*(3+i%4),8+(i%3)*1.2,-8-i*14,.8+(i%3)*.15);
+  // Algumas travessias estreitas, mas sólidas e com colisão própria:
+  // o jogador pode correr nelas sem cair por atravessar uma ponte decorativa.
+  for(const idx of [4,9,14,19]){
+    const a=route[idx],b=route[idx+1],midZ=(a.z+b.z)/2,midX=(a.x+b.x)/2,top=Math.min(a.top,b.top);
+    addPlatform(midX,top-.22,midZ,5.2,.44,1.2,0x8d603c);
+    addBox(midX,top+.015,midZ,5.25,.07,1.22,0x9c714a);
   }
 
+  // Ilhas suspensas, água distante e penhascos decorativos abaixo da trilha.
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(100,205),new THREE.MeshStandardMaterial({color:0x237fa9,roughness:.32,metalness:.12,transparent:true,opacity:.8}));
+  water.rotation.x=-Math.PI/2;water.position.set(0,-8,-66);scene.add(water);
+  for(let i=0;i<25;i++){
+    const z=4-i*5.8,side=i%2?-1:1,x=side*(7.2+(i%3)*1.15),scale=.7+(i%4)*.22;
+    const cliff=new THREE.Mesh(new THREE.DodecahedronGeometry(1.35*scale,1),stone);
+    cliff.scale.set(1.35,.75,1.15);cliff.position.set(x,-1.2,z);cliff.rotation.set(i*.16,i*.38,i*.11);cliff.castShadow=true;scene.add(cliff);decor.push(cliff);
+  }
+
+  // Árvores e arbustos em pequenos grupos nas margens, mantendo a trilha aberta.
+  function tree(x,z,s=1){
+    const g=new THREE.Group();
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.13*s,.2*s,1.25*s,10),wood);trunk.position.y=.62*s;g.add(trunk);
+    for(const [ox,oy,r,c] of [[0,1.55,.68,0x2d8b4a],[-.34,1.35,.46,0x3ca957],[.34,1.38,.47,0x64c85e],[0,2.0,.43,0x83d66b]]){
+      const crown=new THREE.Mesh(new THREE.SphereGeometry(r*s,14,10),material(c,.9,.01));crown.position.set(ox*s,oy*s,0);crown.castShadow=true;g.add(crown);
+    }
+    g.position.set(x,0,z);scene.add(g);decor.push(g);
+  }
+  for(let i=0;i<17;i++){
+    const p=route[Math.min(route.length-1,Math.floor(i*1.35))],side=i%2?-1:1;
+    tree(p.x+side*(p.w*.5+1.1),p.z,.65+(i%3)*.12);
+  }
+
+  // Arcos de pedra em marcos de progresso, sem postes atravessando a passagem.
+  for(const z of [-31,-62,-93,-124]){
+    for(const side of [-1,1]){
+      const post=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,2.8,10),stone);
+      post.position.set(side*4.9,1.4,z);post.castShadow=true;scene.add(post);
+    }
+    const lintel=addBox(0,2.85,z,10,.3,.4,0x657287);
+    const emblem=new THREE.Mesh(new THREE.OctahedronGeometry(.32,0),glow);emblem.position.set(0,3.25,z);scene.add(emblem);
+  }
+
+  // Cristais colecionáveis sempre acima de uma plataforma real e larga.
+  const crystalIndices=[1,3,5,7,9,11,13,15,17,19,21,23];
+  crystalIndices.forEach((idx,i)=>{
+    const p=route[idx],x=p.x+(i%2===0?-.7:.7),y=p.top+1.35;
+    addCrystal(x,y,p.z,i===11?'big':'normal');
+    const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,.14,12),material(0x44305e,.5,.18));
+    pedestal.position.set(x,p.top+.08,p.z);scene.add(pedestal);
+  });
+
+  // Obstáculos simples, posicionados sobre o caminho e longe das bordas.
+  [3,8,13,18].forEach((idx,i)=>{
+    const p=route[idx];
+    const block=addBox(p.x+(i%2?1.6:-1.6),p.top+.42,p.z,.7,.84,.7,0xffca55);
+    block.rotation.y=.2;
+  });
+  createEnemy(1.7,-17);createEnemy(-1.7,-47,'charger');createEnemy(1.7,-78);
+  createEnemy(-1.7,-109,'charger');createEnemy(1.5,-130);
+  addBounce(0,-27);addBounce(0,-69);addBounce(0,-113);
+  addCheckpoint(-62);addCheckpoint(-113);
+  const gate=addGate(-145);
+
+  // Céu claro com nuvens macias e poucas estrelas, para não competir com a rota.
+  scene.background=new THREE.Color(0x83c9f4);
+  scene.fog=new THREE.Fog(0x83c9f4,55,145);
+  for(let i=0;i<10;i++)addCloud((i%2?-1:1)*(8+i%4*2),9+(i%3),-4-i*15,.85+(i%3)*.12);
+  for(let i=0;i<110;i++){
+    const star=new THREE.Mesh(new THREE.SphereGeometry(.035,5,4),new THREE.MeshBasicMaterial({color:0xffffff}));
+    star.position.set((Math.random()-.5)*90,5+Math.random()*28,-Math.random()*165+10);scene.add(star);
+  }
   return gate;
 }
-
 function applyVisualUpgrade(){
   // Passe visual independente: não altera colisões, posições ou regras da fase.
   const cyanGlow=new THREE.MeshStandardMaterial({color:0x45eaff,emissive:0x16bde8,emissiveIntensity:1.05,roughness:.28,metalness:.35});
@@ -433,10 +418,9 @@ function updateMovement(dt){
   camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();camRight.crossVectors(camForward,up).normalize();
   moveDir.set(0,0,0).addScaledVector(camRight,ix).addScaledVector(camForward,iy);
   if(moveDir.lengthSq()>1)moveDir.normalize();
-  const accel=58,maxSpeed=powerTime>0?21:17;
+  const accel=72,maxSpeed=powerTime>0?24:20;
   velocity.x+=moveDir.x*accel*dt;velocity.z+=moveDir.z*accel*dt;
-  const friction=Math.pow(.00055,dt);velocity.x*=friction;velocity.z*=friction;
-  if(moveDir.lengthSq()<.001){velocity.x*=Math.pow(.00008,dt);velocity.z*=Math.pow(.00008,dt)}
+  const friction=Math.pow(moveDir.lengthSq()>.001?.16:.0008,dt);velocity.x*=friction;velocity.z*=friction;
   const sp=Math.hypot(velocity.x,velocity.z);if(sp>maxSpeed){const k=maxSpeed/sp;velocity.x*=k;velocity.z*=k}
   velocity.y-=26*dt;
   const oldY=player.position.y;player.position.addScaledVector(velocity,dt);
@@ -447,13 +431,6 @@ function updateMovement(dt){
     const oldBottom=oldY-1.25;
     let landing=null;
 
-    // Piso contínuo do percurso. Abaixo dele o personagem não deve perder vida.
-    // Ele funciona como chão físico principal; as plataformas elevadas continuam
-    // tendo prioridade quando o personagem está descendo sobre elas.
-    if(player.position.x>-4.4&&player.position.x<4.4&&
-       player.position.z>-178&&player.position.z<10&&oldBottom>=-.18&&newBottom<=.22){
-      landing={top:0};
-    }
     for(const p of platforms){
       const insideX=player.position.x>p.x1-.45&&player.position.x<p.x2+.45;
       const insideZ=player.position.z>p.z1-.45&&player.position.z<p.z2+.45;
@@ -503,7 +480,7 @@ function updateWorld(dt){
   if(powerTime>0){powerTime-=dt;powerBar.style.opacity=1;powerFill.style.width=Math.max(0,powerTime/8*100)+'%';if(powerTime<=0){powerTime=0;showToast('⭐ Poder acabou')}}
   for(const d of decor){if(d.type!=='flag')d.rotation.y+=dt*.04}
   // Win only after collecting most of the island, so the level has a goal beyond walking forward.
-  if(player.position.z<-176&&coins>=8){running=false;score+=1000;scoreEl.textContent=score;showEnd('🏆 ILHA CONQUISTADA!','Você abriu o portão com '+coins+'/12 cristais e fez '+score+' pontos.');beep(1040,.25,'triangle',.05)}
+  if(player.position.z<-143&&coins>=8){running=false;score+=1000;scoreEl.textContent=score;showEnd('🏆 ILHA CONQUISTADA!','Você abriu o portão com '+coins+'/12 cristais e fez '+score+' pontos.');beep(1040,.25,'triangle',.05)}
   progressEl.textContent=coins>=8?'🚪 O portão está aberto! Chegue ao final da ilha':'💎 Colete '+Math.max(0,8-coins)+' cristais para abrir o portão';
 }
 
