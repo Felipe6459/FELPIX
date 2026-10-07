@@ -27,143 +27,57 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 (()=>{
-  const loading=document.getElementById('loading');
-  const hideLoading=()=>loading.classList.add('hidden');
-  setTimeout(hideLoading,2200);
+const loading=document.getElementById('loading'),hideLoading=()=>loading.classList.add('hidden');
+if(!window.THREE){loading.textContent='ERRO AO CARREGAR O MOTOR 3D';return}
+const root=document.getElementById('game'),scene=new THREE.Scene();
+scene.background=new THREE.Color(0x05070b);scene.fog=new THREE.FogExp2(0x0a0e17,0.014);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,500);camera.position.set(0,3.15,8.4);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x9fb7ff,0x11141a,1.25));const moon=new THREE.DirectionalLight(0xb8c8ff,2.2);moon.position.set(-30,45,25);scene.add(moon);
+const world=new THREE.Group();scene.add(world);
+const roadMat=new THREE.MeshStandardMaterial({color:0x25272b,roughness:.82}),sidewalkMat=new THREE.MeshStandardMaterial({color:0x555960,roughness:.92}),lineMat=new THREE.MeshStandardMaterial({color:0xe7e2d0,roughness:.5}),darkMat=new THREE.MeshStandardMaterial({color:0x101318,roughness:.9});
+function box(w,h,d,mat,x,y,z,parent=world){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+box(14,.18,430,roadMat,0,-.08,-190);box(2,.22,430,sidewalkMat,-8,.02,-190);box(2,.22,430,sidewalkMat,8,.02,-190);
+for(let z=8;z>-405;z-=12){box(.12,.025,6,lineMat,-2.35,.025,z);box(.12,.025,6,lineMat,2.35,.025,z)}
+const buildingMats=[0x1b2029,0x242a35,0x30343b,0x171b22];
+for(let z=4;z>-400;z-=18){for(const side of [-1,1]){const h=7+Math.random()*18,w=5+Math.random()*7,d=11+Math.random()*6,x=side*(11+Math.random()*4);const m=box(w,h,d,new THREE.MeshStandardMaterial({color:buildingMats[Math.floor(Math.random()*buildingMats.length)],roughness:.85}),x,h/2,z+Math.random()*6);const wm=new THREE.MeshBasicMaterial({color:0xd8c58a});for(let yy=3;yy<h-1;yy+=2.8)for(let xx=-w*.32;xx<w*.33;xx+=1.7){const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),wm);win.position.set(x+xx,yy,m.position.z-d/2-.01);win.rotation.y=side===1?Math.PI:0;world.add(win)}}}
+function streetLight(x,z){box(.09,5.2,.09,darkMat,x,2.6,z);box(1,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);const glow=new THREE.PointLight(0xffdca3,18,14,2);glow.position.set(x+(x<0?-.9:.9),4.85,z);world.add(glow);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),new THREE.MeshBasicMaterial({color:0xffe5b2}));bulb.position.copy(glow.position);world.add(bulb)}
+for(let z=3;z>-400;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
 
-  if(!window.THREE){
-    loading.textContent='ERRO AO CARREGAR O MOTOR 3D';
-    return;
-  }
+const car=new THREE.Group();scene.add(car);let carReady=false;
+function createFallbackCar(){
+if(carReady)return;car.clear();
+const bodyMat=new THREE.MeshStandardMaterial({color:0x263b68,metalness:.72,roughness:.24}),dark=new THREE.MeshStandardMaterial({color:0x0b0d12,metalness:.15,roughness:.35}),glass=new THREE.MeshStandardMaterial({color:0x101d2c,metalness:.2,roughness:.08}),lightMat=new THREE.MeshBasicMaterial({color:0xffffff}),redMat=new THREE.MeshBasicMaterial({color:0xff2020});
+const body=new THREE.Mesh(new THREE.BoxGeometry(2.15,.48,4.25),bodyMat);body.position.y=.62;body.castShadow=true;car.add(body);
+const hood=new THREE.Mesh(new THREE.BoxGeometry(1.92,.22,1.2),bodyMat);hood.position.set(0,.88,-1.28);hood.rotation.x=-.04;hood.castShadow=true;car.add(hood);
+const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.62,.58,1.75),glass);cabin.position.set(0,1.05,.15);cabin.castShadow=true;car.add(cabin);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(1.72,.12,1.65),bodyMat);roof.position.set(0,1.37,.16);car.add(roof);
+for(const x of [-1.03,1.03])for(const z of [-1.38,1.38]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.24,18),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.42,z);wheel.castShadow=true;car.add(wheel)}
+for(const x of [-.62,.62]){const a=new THREE.Mesh(new THREE.BoxGeometry(.28,.13,.08),lightMat);a.position.set(x,.73,-2.15);car.add(a);const b=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),redMat);b.position.set(x,.72,2.15);car.add(b)}
+const shadow=new THREE.Mesh(new THREE.PlaneGeometry(2.5,4.8),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.03;car.add(shadow);
+car.position.set(0,0,1.2);car.rotation.y=Math.PI;carReady=true;
+}
+createFallbackCar();
+if(THREE.GLTFLoader){const loader=new THREE.GLTFLoader();loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{while(car.children.length)car.remove(car.children[0]);g.scene.scale.setScalar(1.15);g.scene.position.set(0,.02,0);g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});car.add(g.scene);carReady=true;hideLoading()},undefined,()=>{createFallbackCar();hideLoading()})}else hideLoading();
 
-  const root=document.getElementById('game');
-  const scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x05070b);
-  scene.fog=new THREE.FogExp2(0x0a0e17,0.014);
+let steer=0,gas=false,speed=0,distance=0,last=performance.now();
+function bind(id,down,up){const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();down()});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();up()}))}
+bind('left',()=>steer=-1,()=>{if(steer<0)steer=0});bind('right',()=>steer=1,()=>{if(steer>0)steer=0});bind('gas',()=>gas=true,()=>gas=false);
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')steer=-1;if(e.key==='ArrowRight')steer=1;if(e.key==='ArrowUp'||e.key===' ')gas=true});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft'&&steer<0)steer=0;if(e.key==='ArrowRight'&&steer>0)steer=0;if(e.key==='ArrowUp'||e.key===' ')gas=false});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 
-  const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,500);
-  camera.position.set(0,3.1,7.8);
-
-  const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
-  renderer.setSize(innerWidth,innerHeight);
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  root.appendChild(renderer.domElement);
-
-  scene.add(new THREE.HemisphereLight(0x9fb7ff,0x11141a,1.25));
-  const moon=new THREE.DirectionalLight(0xb8c8ff,2.2);
-  moon.position.set(-30,45,25);scene.add(moon);
-
-  const roadMat=new THREE.MeshStandardMaterial({color:0x25272b,roughness:.82});
-  const sidewalkMat=new THREE.MeshStandardMaterial({color:0x555960,roughness:.92});
-  const lineMat=new THREE.MeshStandardMaterial({color:0xe7e2d0,roughness:.5});
-  const darkMat=new THREE.MeshStandardMaterial({color:0x101318,roughness:.9});
-
-  function box(w,h,d,mat,x,y,z){
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-    m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
-  }
-
-  box(14,.18,430,roadMat,0,-.08,-190);
-  box(2,.22,430,sidewalkMat,-8,.02,-190);
-  box(2,.22,430,sidewalkMat,8,.02,-190);
-
-  for(let z=8;z>-405;z-=12){
-    box(.12,.025,6,lineMat,-2.35,.025,z);
-    box(.12,.025,6,lineMat,2.35,.025,z);
-  }
-
-  const buildingMats=[0x1b2029,0x242a35,0x30343b,0x171b22];
-  for(let z=4;z>-400;z-=18){
-    for(const side of [-1,1]){
-      const h=7+Math.random()*18,w=5+Math.random()*7,d=11+Math.random()*6;
-      const x=side*(11+Math.random()*4);
-      const m=box(w,h,d,new THREE.MeshStandardMaterial({
-        color:buildingMats[Math.floor(Math.random()*buildingMats.length)],roughness:.85
-      }),x,h/2,z+Math.random()*6);
-      const wm=new THREE.MeshBasicMaterial({color:0xd8c58a});
-      for(let yy=3;yy<h-1;yy+=2.8)for(let xx=-w*.32;xx<w*.33;xx+=1.7){
-        const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),wm);
-        win.position.set(x+xx,yy,m.position.z-d/2-.01);
-        win.rotation.y=side===1?Math.PI:0;scene.add(win);
-      }
-    }
-  }
-
-  function streetLight(x,z){
-    box(.09,5.2,.09,darkMat,x,2.6,z);
-    box(1,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);
-    const glow=new THREE.PointLight(0xffdca3,18,14,2);
-    glow.position.set(x+(x<0?-.9:.9),4.85,z);scene.add(glow);
-    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),
-      new THREE.MeshBasicMaterial({color:0xffe5b2}));
-    bulb.position.copy(glow.position);scene.add(bulb);
-  }
-  for(let z=3;z>-400;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7);}
-
-  let car=new THREE.Group(),loaded=false;
-  scene.add(car);
-
-  if(THREE.GLTFLoader){
-    const loader=new THREE.GLTFLoader();
-    loader.load(
-      'https://threejs.org/examples/models/gltf/ferrari.glb',
-      g=>{
-        car=g.scene;
-        car.scale.setScalar(1.15);
-        car.position.set(0,.02,1.2);
-        car.rotation.y=Math.PI;
-        car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-        scene.add(car);loaded=true;hideLoading();
-      },
-      undefined,
-      ()=>{loaded=false;hideLoading();}
-    );
-  }
-
-  let steer=0,gas=false,speed=0,last=performance.now();
-  function bind(id,down,up){
-    const el=document.getElementById(id);
-    el.addEventListener('pointerdown',e=>{e.preventDefault();down();});
-    ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();up();}));
-  }
-  bind('left',()=>steer=-1,()=>{if(steer<0)steer=0;});
-  bind('right',()=>steer=1,()=>{if(steer>0)steer=0;});
-  bind('gas',()=>gas=true,()=>gas=false);
-
-  addEventListener('keydown',e=>{
-    if(e.key==='ArrowLeft')steer=-1;
-    if(e.key==='ArrowRight')steer=1;
-    if(e.key==='ArrowUp')gas=true;
-  });
-  addEventListener('keyup',e=>{
-    if(e.key==='ArrowLeft'&&steer<0)steer=0;
-    if(e.key==='ArrowRight'&&steer>0)steer=0;
-    if(e.key==='ArrowUp')gas=false;
-  });
-  addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
-
-  function animate(now){
-    const dt=Math.min((now-last)/1000,.04);last=now;
-    speed=THREE.MathUtils.clamp(speed+(gas?42:-24)*dt,0,145);
-    if(loaded){
-      car.position.x=THREE.MathUtils.damp(car.position.x,steer*4.6,.12,dt);
-      car.position.z=1.2;
-      car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.055,.1,dt);
-      scene.position.z=(scene.position.z+speed*dt*.018)%12;
-    }
-    camera.position.x=THREE.MathUtils.damp(camera.position.x,car.position.x*.72,.1,dt);
-    camera.lookAt(car.position.x*.55,1,car.position.z-5);
-    document.getElementById('speed').textContent=Math.round(speed);
-    renderer.render(scene,camera);
-    requestAnimationFrame(animate);
-  }
-  hideLoading();
-  requestAnimationFrame(animate);
+function animate(now){
+const dt=Math.min((now-last)/1000,.04);last=now;const target=gas?145:0,acceleration=gas?48:62;
+if(speed<target)speed=Math.min(target,speed+acceleration*dt);else speed=Math.max(target,speed-62*dt);
+const forward=speed*dt*.055;
+if(carReady){car.position.x=THREE.MathUtils.damp(car.position.x,steer*4.15,.11,dt);car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.065,.1,dt)}
+if(speed>0.1){world.position.z+=forward;distance+=forward;if(world.position.z>12)world.position.z-=12}
+camera.position.x=THREE.MathUtils.damp(camera.position.x,car.position.x*.70,.1,dt);camera.lookAt(car.position.x*.48,1.0,0.0);
+document.getElementById('speed').textContent=Math.round(speed);renderer.render(scene,camera);requestAnimationFrame(animate)
+}
+hideLoading();requestAnimationFrame(animate);
 })();
 </script>
 </body>
