@@ -314,22 +314,10 @@ function applyVisualUpgrade(){
   const cyanGlow=new THREE.MeshStandardMaterial({color:0x45eaff,emissive:0x16bde8,emissiveIntensity:1.05,roughness:.28,metalness:.35});
   const violetGlow=new THREE.MeshStandardMaterial({color:0x9c69ff,emissive:0x5520c8,emissiveIntensity:.75,roughness:.3,metalness:.3});
   const goldGlow=new THREE.MeshStandardMaterial({color:0xffd96a,emissive:0xa85b0a,emissiveIntensity:.48,roughness:.3,metalness:.28});
-  // Acabamento luminoso fino nas bordas das plataformas já existentes.
-  for(const p of platforms){
-    // Algumas áreas de colisão podem existir sem um objeto visual próprio.
-    // O efeito visual só deve ser aplicado a meshes reais.
-    if(!p.mesh || !p.mesh.geometry || !p.mesh.position) continue;
-    const g=p.mesh.geometry.parameters||{};
-    const w=g.width||1,d=g.depth||1;
-    const y=p.mesh.position.y-(g.height||.7)/2+.035;
-    const thickness=.075;
-    const edge=(x,z,ew,ed)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(ew,.055,ed),cyanGlow);m.position.set(x,y,z);m.castShadow=false;m.receiveShadow=false;scene.add(m)};
-    edge(p.mesh.position.x-w/2,p.mesh.position.z,thickness,d);
-    edge(p.mesh.position.x+w/2,p.mesh.position.z,thickness,d);
-    edge(p.mesh.position.x,p.mesh.position.z-d/2,w,thickness);
-    edge(p.mesh.position.x,p.mesh.position.z+d/2,w,thickness);
-    p.mesh.castShadow=true;p.mesh.receiveShadow=true;
-  }
+  // Não inspecionamos geometry das plataformas neste passe visual.
+  // A colisão é independente do acabamento gráfico; isso evita o TypeError
+  // quando o provedor entrega um objeto de plataforma incompleto.
+
   // Detalhes novos no personagem, sem substituir o modelo nem a animação atual.
   const badge=new THREE.Mesh(new THREE.OctahedronGeometry(.19,0),goldGlow);
   badge.position.set(0,.12,.39);body.add(badge);
