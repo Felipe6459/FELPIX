@@ -23,19 +23,16 @@
 <div class="hud"><div class="badge">STREET RUSH<br><small style="opacity:.55">NIGHT RUN • PROTOTYPE 01</small></div><div class="speed"><small>KM/H</small><span id="speed">0</span></div></div>
 <div class="controls"><div class="pad"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div><button class="ctrl" id="gas">ACELERAR</button></div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-(async()=>{
+(()=>{
   const loading=document.getElementById('loading');
   const hideLoading=()=>loading.classList.add('hidden');
-  setTimeout(hideLoading,1800);
+  setTimeout(hideLoading,2200);
 
-  let THREE, GLTFLoader;
-  try{
-    THREE=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js');
-    ({GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js'));
-  }catch(err){
+  if(!window.THREE){
     loading.textContent='ERRO AO CARREGAR O MOTOR 3D';
-    console.error(err);
     return;
   }
 
@@ -52,15 +49,13 @@
   renderer.setSize(innerWidth,innerHeight);
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.15;
   root.appendChild(renderer.domElement);
 
   scene.add(new THREE.HemisphereLight(0x9fb7ff,0x11141a,1.25));
   const moon=new THREE.DirectionalLight(0xb8c8ff,2.2);
-  moon.position.set(-30,45,25);moon.castShadow=true;scene.add(moon);
+  moon.position.set(-30,45,25);scene.add(moon);
 
-  const roadMat=new THREE.MeshStandardMaterial({color:0x25272b,roughness:.82,metalness:.05});
+  const roadMat=new THREE.MeshStandardMaterial({color:0x25272b,roughness:.82});
   const sidewalkMat=new THREE.MeshStandardMaterial({color:0x555960,roughness:.92});
   const lineMat=new THREE.MeshStandardMaterial({color:0xe7e2d0,roughness:.5});
   const darkMat=new THREE.MeshStandardMaterial({color:0x101318,roughness:.9});
@@ -78,10 +73,6 @@
     box(.12,.025,6,lineMat,-2.35,.025,z);
     box(.12,.025,6,lineMat,2.35,.025,z);
   }
-  for(let z=8;z>-405;z-=20){
-    box(.16,.025,8,lineMat,-6.85,.025,z);
-    box(.16,.025,8,lineMat,6.85,.025,z);
-  }
 
   const buildingMats=[0x1b2029,0x242a35,0x30343b,0x171b22];
   for(let z=4;z>-400;z-=18){
@@ -91,20 +82,18 @@
       const m=box(w,h,d,new THREE.MeshStandardMaterial({
         color:buildingMats[Math.floor(Math.random()*buildingMats.length)],roughness:.85
       }),x,h/2,z+Math.random()*6);
-      const windowMat=new THREE.MeshBasicMaterial({color:0xd8c58a});
-      for(let yy=3;yy<h-1;yy+=2.8){
-        for(let xx=-w*.32;xx<w*.33;xx+=1.7){
-          const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),windowMat);
-          win.position.set(x+xx,yy,m.position.z-d/2-.01);
-          win.rotation.y=side===1?Math.PI:0;scene.add(win);
-        }
+      const wm=new THREE.MeshBasicMaterial({color:0xd8c58a});
+      for(let yy=3;yy<h-1;yy+=2.8)for(let xx=-w*.32;xx<w*.33;xx+=1.7){
+        const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),wm);
+        win.position.set(x+xx,yy,m.position.z-d/2-.01);
+        win.rotation.y=side===1?Math.PI:0;scene.add(win);
       }
     }
   }
 
   function streetLight(x,z){
     box(.09,5.2,.09,darkMat,x,2.6,z);
-    box(1.0,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);
+    box(1,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);
     const glow=new THREE.PointLight(0xffdca3,18,14,2);
     glow.position.set(x+(x<0?-.9:.9),4.85,z);scene.add(glow);
     const bulb=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),
@@ -113,30 +102,31 @@
   }
   for(let z=3;z>-400;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7);}
 
-  let car=new THREE.Group();
+  let car=new THREE.Group(),loaded=false;
   scene.add(car);
-  let loaded=false;
 
-  const loader=new GLTFLoader();
-  loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{
-    car=g.scene;
-    car.scale.setScalar(1.15);
-    car.position.set(0,.02,1.2);
-    car.rotation.y=Math.PI;
-    car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-    scene.add(car);loaded=true;hideLoading();
-  },undefined,err=>{
-    console.warn('Carro GLB não carregou; mantendo a cena.',err);
-    loaded=false;hideLoading();
-  });
+  if(THREE.GLTFLoader){
+    const loader=new THREE.GLTFLoader();
+    loader.load(
+      'https://threejs.org/examples/models/gltf/ferrari.glb',
+      g=>{
+        car=g.scene;
+        car.scale.setScalar(1.15);
+        car.position.set(0,.02,1.2);
+        car.rotation.y=Math.PI;
+        car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+        scene.add(car);loaded=true;hideLoading();
+      },
+      undefined,
+      ()=>{loaded=false;hideLoading();}
+    );
+  }
 
   let steer=0,gas=false,speed=0,last=performance.now();
   function bind(id,down,up){
-    const b=document.getElementById(id);
-    b.addEventListener('pointerdown',e=>{e.preventDefault();down();});
-    ['pointerup','pointercancel','pointerleave'].forEach(ev=>
-      b.addEventListener(ev,e=>{e.preventDefault();up();})
-    );
+    const el=document.getElementById(id);
+    el.addEventListener('pointerdown',e=>{e.preventDefault();down();});
+    ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();up();}));
   }
   bind('left',()=>steer=-1,()=>{if(steer<0)steer=0;});
   bind('right',()=>steer=1,()=>{if(steer>0)steer=0;});
@@ -153,26 +143,21 @@
     if(e.key==='ArrowUp')gas=false;
   });
   addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
+    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
     renderer.setSize(innerWidth,innerHeight);
   });
 
   function animate(now){
     const dt=Math.min((now-last)/1000,.04);last=now;
-    speed+=((gas?42:-24)*dt);
-    speed=THREE.MathUtils.clamp(speed,0,145);
-    const travel=speed*dt*.018;
-
+    speed=THREE.MathUtils.clamp(speed+(gas?42:-24)*dt,0,145);
     if(loaded){
       car.position.x=THREE.MathUtils.damp(car.position.x,steer*4.6,.12,dt);
       car.position.z=1.2;
       car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.055,.1,dt);
-      car.rotation.y=THREE.MathUtils.damp(car.rotation.y,Math.PI-steer*.035,.1,dt);
-      scene.position.z=(scene.position.z+travel)%12;
+      scene.position.z=(scene.position.z+speed*dt*.018)%12;
     }
     camera.position.x=THREE.MathUtils.damp(camera.position.x,car.position.x*.72,.1,dt);
-    camera.lookAt(car.position.x*.55,1.0,car.position.z-5);
+    camera.lookAt(car.position.x*.55,1,car.position.z-5);
     document.getElementById('speed').textContent=Math.round(speed);
     renderer.render(scene,camera);
     requestAnimationFrame(animate);
