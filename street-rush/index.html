@@ -20,7 +20,7 @@
 <body>
 <div id="game">
 <div id="loading" class="loading">CARREGANDO CIDADE 3D…</div>
-<div class="hud"><div class="badge">STREET RUSH<br><small style="opacity:.55">NIGHT RUN • PROTOTYPE 01</small></div><div class="speed"><small>KM/H</small><span id="speed">0</span></div></div>
+<div class="hud"><div class="badge">STREET RUSH<br><small style="opacity:.55">NIGHT RUN • PROTOTYPE 01</small></div><div class="speed"><small>KM/H</small><span id="speed">0</span><small style="margin-top:4px">KM <span id="distance">0.00</span></small></div></div>
 <div class="controls"><div class="pad"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div><button class="ctrl" id="gas">ACELERAR</button></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -38,12 +38,12 @@ scene.add(new THREE.HemisphereLight(0x9fb7ff,0x11141a,1.25));const moon=new THRE
 const world=new THREE.Group();scene.add(world);
 const roadMat=new THREE.MeshStandardMaterial({color:0x25272b,roughness:.82}),sidewalkMat=new THREE.MeshStandardMaterial({color:0x555960,roughness:.92}),lineMat=new THREE.MeshStandardMaterial({color:0xe7e2d0,roughness:.5}),darkMat=new THREE.MeshStandardMaterial({color:0x101318,roughness:.9});
 function box(w,h,d,mat,x,y,z,parent=world){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-box(14,.18,430,roadMat,0,-.08,-190);box(2,.22,430,sidewalkMat,-8,.02,-190);box(2,.22,430,sidewalkMat,8,.02,-190);
-for(let z=8;z>-405;z-=12){box(.12,.025,6,lineMat,-2.35,.025,z);box(.12,.025,6,lineMat,2.35,.025,z)}
+box(14,.18,2200,roadMat,0,-.08,-1050);box(2,.22,2200,sidewalkMat,-8,.02,-1050);box(2,.22,2200,sidewalkMat,8,.02,-1050);
+for(let z=8;z>-2100;z-=12){box(.12,.025,6,lineMat,-2.35,.025,z);box(.12,.025,6,lineMat,2.35,.025,z)}
 const buildingMats=[0x1b2029,0x242a35,0x30343b,0x171b22];
-for(let z=4;z>-400;z-=18){for(const side of [-1,1]){const h=7+Math.random()*18,w=5+Math.random()*7,d=11+Math.random()*6,x=side*(11+Math.random()*4);const m=box(w,h,d,new THREE.MeshStandardMaterial({color:buildingMats[Math.floor(Math.random()*buildingMats.length)],roughness:.85}),x,h/2,z+Math.random()*6);const wm=new THREE.MeshBasicMaterial({color:0xd8c58a});for(let yy=3;yy<h-1;yy+=2.8)for(let xx=-w*.32;xx<w*.33;xx+=1.7){const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),wm);win.position.set(x+xx,yy,m.position.z-d/2-.01);win.rotation.y=side===1?Math.PI:0;world.add(win)}}}
+for(let z=4;z>-2050;z-=18){for(const side of [-1,1]){const h=7+Math.random()*18,w=5+Math.random()*7,d=11+Math.random()*6,x=side*(11+Math.random()*4);const m=box(w,h,d,new THREE.MeshStandardMaterial({color:buildingMats[Math.floor(Math.random()*buildingMats.length)],roughness:.85}),x,h/2,z+Math.random()*6);const wm=new THREE.MeshBasicMaterial({color:0xd8c58a});for(let yy=3;yy<h-1;yy+=2.8)for(let xx=-w*.32;xx<w*.33;xx+=1.7){const win=new THREE.Mesh(new THREE.PlaneGeometry(.75,.95),wm);win.position.set(x+xx,yy,m.position.z-d/2-.01);win.rotation.y=side===1?Math.PI:0;world.add(win)}}}
 function streetLight(x,z){box(.09,5.2,.09,darkMat,x,2.6,z);box(1,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);const glow=new THREE.PointLight(0xffdca3,18,14,2);glow.position.set(x+(x<0?-.9:.9),4.85,z);world.add(glow);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),new THREE.MeshBasicMaterial({color:0xffe5b2}));bulb.position.copy(glow.position);world.add(bulb)}
-for(let z=3;z>-400;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
+for(let z=3;z>-2050;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
 
 const car=new THREE.Group();scene.add(car);let carReady=false;
 function createFallbackCar(){
@@ -58,10 +58,10 @@ for(const x of [-.62,.62]){const a=new THREE.Mesh(new THREE.BoxGeometry(.28,.13,
 const shadow=new THREE.Mesh(new THREE.PlaneGeometry(2.5,4.8),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.03;car.add(shadow);
 car.position.set(0,0,1.2);car.rotation.y=Math.PI;carReady=true;
 }
-createFallbackCar();
-if(THREE.GLTFLoader){const loader=new THREE.GLTFLoader();loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{while(car.children.length)car.remove(car.children[0]);g.scene.scale.setScalar(1.15);g.scene.position.set(0,.02,0);g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});car.add(g.scene);carReady=true;hideLoading()},undefined,()=>{createFallbackCar();hideLoading()})}else hideLoading();
+if(THREE.GLTFLoader){const loader=new THREE.GLTFLoader();loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{while(car.children.length)car.remove(car.children[0]);const model=g.scene.children[0]||g.scene;model.scale.setScalar(1.15);model.position.set(0,.02,0);model.rotation.y=Math.PI;model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});car.add(model);carReady=true;hideLoading()},undefined,()=>{loading.textContent='NÃO FOI POSSÍVEL CARREGAR O CARRO 3D';loading.style.background='#05070b';});}else {loading.textContent='ERRO AO CARREGAR O CARRO 3D';}
 
 let steer=0,gas=false,speed=0,distance=0,last=performance.now();
+car.position.set(0,0,0);
 function bind(id,down,up){const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();down()});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();up()}))}
 bind('left',()=>steer=-1,()=>{if(steer<0)steer=0});bind('right',()=>steer=1,()=>{if(steer>0)steer=0});bind('gas',()=>gas=true,()=>gas=false);
 addEventListener('keydown',e=>{if(e.key==='ArrowLeft')steer=-1;if(e.key==='ArrowRight')steer=1;if(e.key==='ArrowUp'||e.key===' ')gas=true});
@@ -73,9 +73,9 @@ const dt=Math.min((now-last)/1000,.04);last=now;const target=gas?145:0,accelerat
 if(speed<target)speed=Math.min(target,speed+acceleration*dt);else speed=Math.max(target,speed-62*dt);
 const forward=speed*dt*.055;
 if(carReady){car.position.x=THREE.MathUtils.damp(car.position.x,steer*4.15,.11,dt);car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.065,.1,dt)}
-if(speed>0.1){world.position.z+=forward;distance+=forward;if(world.position.z>12)world.position.z-=12}
-camera.position.x=THREE.MathUtils.damp(camera.position.x,car.position.x*.70,.1,dt);camera.lookAt(car.position.x*.48,1.0,0.0);
-document.getElementById('speed').textContent=Math.round(speed);renderer.render(scene,camera);requestAnimationFrame(animate)
+if(speed>0.1){car.position.z-=forward;distance+=forward}
+const targetCamX=car.position.x*.70,targetCamZ=car.position.z+8.4;camera.position.x=THREE.MathUtils.damp(camera.position.x,targetCamX,.12,dt);camera.position.z=THREE.MathUtils.damp(camera.position.z,targetCamZ,.12,dt);camera.lookAt(car.position.x*.48,1.0,car.position.z-2.5);
+document.getElementById('speed').textContent=Math.round(speed);document.getElementById('distance').textContent=(distance/1000).toFixed(2);renderer.render(scene,camera);requestAnimationFrame(animate)
 }
 hideLoading();requestAnimationFrame(animate);
 })();
