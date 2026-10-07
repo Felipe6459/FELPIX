@@ -46,19 +46,30 @@ function streetLight(x,z){box(.09,5.2,.09,darkMat,x,2.6,z);box(1,.08,.08,darkMat
 for(let z=3;z>-2050;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
 
 const car=new THREE.Group();scene.add(car);let carReady=false;
-function createFallbackCar(){
-if(carReady)return;car.clear();
-const bodyMat=new THREE.MeshStandardMaterial({color:0x263b68,metalness:.72,roughness:.24}),dark=new THREE.MeshStandardMaterial({color:0x0b0d12,metalness:.15,roughness:.35}),glass=new THREE.MeshStandardMaterial({color:0x101d2c,metalness:.2,roughness:.08}),lightMat=new THREE.MeshBasicMaterial({color:0xffffff}),redMat=new THREE.MeshBasicMaterial({color:0xff2020});
-const body=new THREE.Mesh(new THREE.BoxGeometry(2.15,.48,4.25),bodyMat);body.position.y=.62;body.castShadow=true;car.add(body);
-const hood=new THREE.Mesh(new THREE.BoxGeometry(1.92,.22,1.2),bodyMat);hood.position.set(0,.88,-1.28);hood.rotation.x=-.04;hood.castShadow=true;car.add(hood);
-const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.62,.58,1.75),glass);cabin.position.set(0,1.05,.15);cabin.castShadow=true;car.add(cabin);
-const roof=new THREE.Mesh(new THREE.BoxGeometry(1.72,.12,1.65),bodyMat);roof.position.set(0,1.37,.16);car.add(roof);
-for(const x of [-1.03,1.03])for(const z of [-1.38,1.38]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.24,18),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.42,z);wheel.castShadow=true;car.add(wheel)}
-for(const x of [-.62,.62]){const a=new THREE.Mesh(new THREE.BoxGeometry(.28,.13,.08),lightMat);a.position.set(x,.73,-2.15);car.add(a);const b=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),redMat);b.position.set(x,.72,2.15);car.add(b)}
-const shadow=new THREE.Mesh(new THREE.PlaneGeometry(2.5,4.8),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.03;car.add(shadow);
-car.position.set(0,0,1.2);car.rotation.y=Math.PI;carReady=true;
+car.position.set(0,0,0);
+
+if(THREE.GLTFLoader){
+  const loader=new THREE.GLTFLoader();
+  const carUrl='https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb';
+  loader.load(carUrl,g=>{
+    while(car.children.length)car.remove(car.children[0]);
+    const model=g.scene.children[0]||g.scene;
+    model.scale.setScalar(1.15);
+    model.position.set(0,.02,0);
+    model.rotation.y=Math.PI;
+    model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+    car.add(model);
+    carReady=true;
+  },undefined,err=>{
+    console.error('Falha ao carregar Ferrari 3D',err);
+    loading.textContent='FALHA AO CARREGAR O CARRO 3D';
+    setTimeout(hideLoading,1200);
+  });
+}else{
+  loading.textContent='ERRO AO CARREGAR O CARRO 3D';
+  setTimeout(hideLoading,1200);
 }
-if(THREE.GLTFLoader){const loader=new THREE.GLTFLoader();loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{while(car.children.length)car.remove(car.children[0]);const model=g.scene.children[0]||g.scene;model.scale.setScalar(1.15);model.position.set(0,.02,0);model.rotation.y=Math.PI;model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});car.add(model);carReady=true;hideLoading()},undefined,()=>{loading.textContent='NÃO FOI POSSÍVEL CARREGAR O CARRO 3D';loading.style.background='#05070b';});}else {loading.textContent='ERRO AO CARREGAR O CARRO 3D';}
+hideLoading();
 
 let steer=0,gas=false,speed=0,distance=0,last=performance.now();
 car.position.set(0,0,0);
