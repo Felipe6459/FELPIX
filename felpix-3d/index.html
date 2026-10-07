@@ -70,7 +70,7 @@ const keys={left:false,right:false,forward:false,back:false};
 const stickInput={x:0,y:0};
 const platforms=[],crystals=[],enemies=[],hazards=[],decor=[],bouncePads=[],checkpoints=[];
 let starItem=null;
-const world={minX:-9,maxX:9,minZ:-154,maxZ:10};
+const world={minX:-7.5,maxX:7.5,minZ:-154,maxZ:10};
 const up=new THREE.Vector3(0,1,0),camForward=new THREE.Vector3(),camRight=new THREE.Vector3(),moveDir=new THREE.Vector3();
 
 function material(c,rough=.75,metal=.05){return new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal})}
@@ -195,132 +195,99 @@ function addGate(z){
 }
 
 function createWorld(){
-  // Nova fase: Trilha das Ilhas Verdes. Plataformas largas, alturas suaves,
-  // pequenos intervalos e referências visuais claras para o jogador.
-  const grass=material(0x4eaa58,.9,.01), grassLight=material(0x83d66b,.86,.01);
-  const soil=material(0x805039,.96,.01), stone=material(0x657287,.82,.04);
-  const wood=material(0x8d603c,.82,.02), gold=material(0xffd15a,.3,.3);
-  const glow=new THREE.MeshStandardMaterial({color:0x69f0ff,emissive:0x148ea8,emissiveIntensity:.65,roughness:.25,metalness:.3});
+  // Fase refeita: arquipélago de cristais. Cada ilha tem espaço vazio visível
+  // entre a próxima, com saltos planejados para a física desta versão.
+  const grass=material(0x399b65,.84,.02), grassTop=material(0x6fcf83,.82,.02);
+  const soil=material(0x5c4054,.9,.02), stone=material(0x596b85,.76,.08);
+  const wood=material(0x93613f,.8,.02), gold=material(0xffca55,.3,.3);
+  const glow=new THREE.MeshStandardMaterial({color:0x5beaff,emissive:0x168ea8,emissiveIntensity:.7,roughness:.25,metalness:.25});
   const route=[
-    {x:0,z:5,top:0,w:10.5,d:7.0},
-    {x:0,z:-1.4,top:0,w:8.2,d:5.8},
-    {x:.4,z:-7.6,top:.15,w:8.0,d:5.8},
-    {x:1.0,z:-13.8,top:.3,w:8.0,d:5.8},
-    {x:.7,z:-20.0,top:.45,w:8.0,d:5.8},
-    {x:0,z:-26.2,top:.25,w:8.3,d:5.8},
-    {x:-.7,z:-32.4,top:.1,w:8.0,d:5.8},
-    {x:-1.0,z:-38.6,top:.35,w:8.0,d:5.8},
-    {x:-.4,z:-44.8,top:.55,w:8.0,d:5.8},
-    {x:.4,z:-51.0,top:.35,w:8.3,d:5.8},
-    {x:1.0,z:-57.2,top:.15,w:8.0,d:5.8},
-    {x:.6,z:-63.4,top:.4,w:8.0,d:5.8},
-    {x:0,z:-69.6,top:.65,w:8.0,d:5.8},
-    {x:-.8,z:-75.8,top:.45,w:8.2,d:5.8},
-    {x:-1.0,z:-82.0,top:.25,w:8.0,d:5.8},
-    {x:-.3,z:-88.2,top:.45,w:8.0,d:5.8},
-    {x:.5,z:-94.4,top:.7,w:8.0,d:5.8},
-    {x:1.0,z:-100.6,top:.45,w:8.0,d:5.8},
-    {x:.5,z:-106.8,top:.25,w:8.2,d:5.8},
-    {x:-.4,z:-113.0,top:.45,w:8.0,d:5.8},
-    {x:-1.0,z:-119.2,top:.7,w:8.0,d:5.8},
-    {x:-.4,z:-125.4,top:.45,w:8.2,d:5.8},
-    {x:.4,z:-131.6,top:.25,w:8.0,d:5.8},
-    {x:0,z:-137.8,top:.25,w:10.5,d:7.2}
+    {x:0,z:5,top:0,w:9.2,d:6.2,start:true},
+    {x:.8,z:-3,top:.15,w:5.2,d:4.5},
+    {x:1.7,z:-11,top:.35,w:5.0,d:4.4},
+    {x:.5,z:-19,top:.05,w:5.1,d:4.5},
+    {x:-1.0,z:-27,top:.3,w:5.0,d:4.5},
+    {x:-1.7,z:-35,top:.6,w:5.2,d:4.5},
+    {x:-.5,z:-43,top:.25,w:5.0,d:4.5},
+    {x:1.0,z:-51,top:.05,w:5.1,d:4.5},
+    {x:1.8,z:-59,top:.35,w:5.0,d:4.5},
+    {x:.6,z:-67,top:.65,w:5.2,d:4.5,checkpoint:true},
+    {x:-.9,z:-75,top:.35,w:5.0,d:4.5},
+    {x:-1.8,z:-83,top:.1,w:5.1,d:4.5},
+    {x:-.6,z:-91,top:.4,w:5.0,d:4.5},
+    {x:1.0,z:-99,top:.7,w:5.0,d:4.5},
+    {x:1.8,z:-107,top:.35,w:5.2,d:4.5},
+    {x:.5,z:-115,top:.1,w:5.0,d:4.5},
+    {x:-1.1,z:-123,top:.4,w:5.0,d:4.5},
+    {x:-.5,z:-131,top:.7,w:5.4,d:4.8,checkpoint:true},
+    {x:0,z:-139,top:.35,w:8.6,d:6.2,finish:true}
   ];
-  const tops=[];
+  const stoneMat=material(0x7d8297,.78,.08);
   route.forEach((p,i)=>{
-    // A colisão usa a laje marrom; a tampa verde dá acabamento de ilha.
-    addPlatform(p.x,p.top-.42,p.z,p.w,.84,p.d,0x805039);
-    const cap=addBox(p.x,p.top-.055,p.z,p.w+.08,.13,p.d+.08,0x4eaa58);
-    cap.receiveShadow=true;
-    const edge=addBox(p.x,p.top-.14,p.z,p.w,.08,p.d,0x83d66b);
-    edge.material=grassLight;
-    tops.push(p.top);
-    // Faixas de pedra e madeira deixam a trilha legível sem poluir o caminho.
-    if(i>0&&i<route.length-1&&i%4===2){
-      const plank=addBox(p.x,p.top+.025,p.z,p.w*.62,.045,.22,0x8d603c);
-      plank.rotation.y=.04;
+    // Ilha com base facetada, borda de rocha e topo gramado separado.
+    addPlatform(p.x,p.top-.42,p.z,p.w,.84,p.d,0x5c4054);
+    const top=addBox(p.x,p.top+.015,p.z,p.w,.12,p.d,0x399b65);
+    top.material=grass;
+    addBox(p.x,p.top-.105,p.z,p.w+.06,.07,p.d+.06,0x6fcf83).material=grassTop;
+    // Pedras facetadas sob cada ilha dão volume sem cobrir o vão entre elas.
+    for(let side of [-1,1]){
+      const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.62+(i%3)*.1,0),stone);
+      rock.scale.set(1.3,1.2,1.4);
+      rock.position.set(p.x+side*(p.w*.29),p.top-.72,p.z+(i%2?.45:-.45));
+      rock.rotation.set(i*.12,side*.4,i*.08);rock.castShadow=true;scene.add(rock);decor.push(rock);
+      if(i%2===1){
+        const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.19+(i%3)*.035,0),glow);
+        crystal.scale.y=1.7;crystal.position.set(p.x+side*(p.w*.38),p.top+.28,p.z-.3);
+        crystal.rotation.z=side*.16;scene.add(crystal);decor.push(crystal);
+      }
     }
-    // Pequenos cristais luminosos nas bordas das ilhas.
-    for(const side of [-1,1]){
-      if(i%3===1){
-        const shard=new THREE.Mesh(new THREE.OctahedronGeometry(.2+(i%2)*.07,0),glow);
-        shard.position.set(p.x+side*(p.w*.39),p.top+.42,p.z-.2);
-        shard.scale.y=1.6;shard.rotation.z=side*.18;scene.add(shard);decor.push(shard);
+    // Caminho central discreto nas ilhas maiores; nada atravessa os vãos.
+    if(p.start||p.finish||p.checkpoint){
+      for(let k=-1;k<=1;k++){
+        addBox(p.x+k*.72,p.top+.09,p.z,p.w*.18,.035,.55,0xd6c5a1);
       }
     }
   });
 
-  // Algumas travessias estreitas, mas sólidas e com colisão própria:
-  // o jogador pode correr nelas sem cair por atravessar uma ponte decorativa.
-  for(const idx of [4,9,14,19]){
-    const a=route[idx],b=route[idx+1],midZ=(a.z+b.z)/2,midX=(a.x+b.x)/2,top=Math.min(a.top,b.top);
-    addPlatform(midX,top-.22,midZ,5.2,.44,1.2,0x8d603c);
-    addBox(midX,top+.015,midZ,5.25,.07,1.22,0x9c714a);
-  }
-
-  // Ilhas suspensas, água distante e penhascos decorativos abaixo da trilha.
-  const water=new THREE.Mesh(new THREE.PlaneGeometry(100,205),new THREE.MeshStandardMaterial({color:0x237fa9,roughness:.32,metalness:.12,transparent:true,opacity:.8}));
-  water.rotation.x=-Math.PI/2;water.position.set(0,-8,-66);scene.add(water);
-  for(let i=0;i<25;i++){
-    const z=4-i*5.8,side=i%2?-1:1,x=side*(7.2+(i%3)*1.15),scale=.7+(i%4)*.22;
-    const cliff=new THREE.Mesh(new THREE.DodecahedronGeometry(1.35*scale,1),stone);
-    cliff.scale.set(1.35,.75,1.15);cliff.position.set(x,-1.2,z);cliff.rotation.set(i*.16,i*.38,i*.11);cliff.castShadow=true;scene.add(cliff);decor.push(cliff);
-  }
-
-  // Árvores e arbustos em pequenos grupos nas margens, mantendo a trilha aberta.
-  function tree(x,z,s=1){
+  // Árvores somente nas margens das ilhas grandes, sem invadir a área de pouso.
+  function tree(x,z,scale=1){
     const g=new THREE.Group();
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.13*s,.2*s,1.25*s,10),wood);trunk.position.y=.62*s;g.add(trunk);
-    for(const [ox,oy,r,c] of [[0,1.55,.68,0x2d8b4a],[-.34,1.35,.46,0x3ca957],[.34,1.38,.47,0x64c85e],[0,2.0,.43,0x83d66b]]){
-      const crown=new THREE.Mesh(new THREE.SphereGeometry(r*s,14,10),material(c,.9,.01));crown.position.set(ox*s,oy*s,0);crown.castShadow=true;g.add(crown);
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.1*scale,.16*scale,.9*scale,9),wood);
+    trunk.position.y=.45*scale;g.add(trunk);
+    for(const [y,r,c] of [[.95,.42,0x27885b],[1.35,.34,0x42a86b],[1.7,.25,0x80d68a]]){
+      const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(r*scale,1),material(c,.9,.01));
+      crown.position.y=y*scale;crown.castShadow=true;g.add(crown);
     }
     g.position.set(x,0,z);scene.add(g);decor.push(g);
   }
-  for(let i=0;i<17;i++){
-    const p=route[Math.min(route.length-1,Math.floor(i*1.35))],side=i%2?-1:1;
-    tree(p.x+side*(p.w*.5+1.1),p.z,.65+(i%3)*.12);
-  }
+  tree(-3.1,5,1.05);tree(3.0,5,.9);tree(-2.0,-67,.72);tree(2.1,-131,.8);tree(-2.7,-139,.9);
 
-  // Arcos de pedra em marcos de progresso, sem postes atravessando a passagem.
-  for(const z of [-31,-62,-93,-124]){
-    for(const side of [-1,1]){
-      const post=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,2.8,10),stone);
-      post.position.set(side*4.9,1.4,z);post.castShadow=true;scene.add(post);
-    }
-    const lintel=addBox(0,2.85,z,10,.3,.4,0x657287);
-    const emblem=new THREE.Mesh(new THREE.OctahedronGeometry(.32,0),glow);emblem.position.set(0,3.25,z);scene.add(emblem);
-  }
-
-  // Cristais colecionáveis sempre acima de uma plataforma real e larga.
-  const crystalIndices=[1,3,5,7,9,11,13,15,17,19,21,23];
-  crystalIndices.forEach((idx,i)=>{
-    const p=route[idx],x=p.x+(i%2===0?-.7:.7),y=p.top+1.35;
-    addCrystal(x,y,p.z,i===11?'big':'normal');
-    const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,.14,12),material(0x44305e,.5,.18));
-    pedestal.position.set(x,p.top+.08,p.z);scene.add(pedestal);
-  });
-
-  // Obstáculos simples, posicionados sobre o caminho e longe das bordas.
-  [3,8,13,18].forEach((idx,i)=>{
-    const p=route[idx];
-    const block=addBox(p.x+(i%2?1.6:-1.6),p.top+.42,p.z,.7,.84,.7,0xffca55);
-    block.rotation.y=.2;
-  });
-  createEnemy(1.7,-17);createEnemy(-1.7,-47,'charger');createEnemy(1.7,-78);
-  createEnemy(-1.7,-109,'charger');createEnemy(1.5,-130);
-  addBounce(0,-27);addBounce(0,-69);addBounce(0,-113);
-  addCheckpoint(-62);addCheckpoint(-113);
-  const gate=addGate(-145);
-
-  // Céu claro com nuvens macias e poucas estrelas, para não competir com a rota.
+  // Fundo de céu e névoa; água distante reforça a sensação de ilhas suspensas.
   scene.background=new THREE.Color(0x83c9f4);
-  scene.fog=new THREE.Fog(0x83c9f4,55,145);
-  for(let i=0;i<10;i++)addCloud((i%2?-1:1)*(8+i%4*2),9+(i%3),-4-i*15,.85+(i%3)*.12);
-  for(let i=0;i<110;i++){
-    const star=new THREE.Mesh(new THREE.SphereGeometry(.035,5,4),new THREE.MeshBasicMaterial({color:0xffffff}));
-    star.position.set((Math.random()-.5)*90,5+Math.random()*28,-Math.random()*165+10);scene.add(star);
+  scene.fog=new THREE.Fog(0x83c9f4,48,132);
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(100,190),new THREE.MeshStandardMaterial({color:0x207fa8,roughness:.32,metalness:.1,transparent:true,opacity:.78}));
+  water.rotation.x=-Math.PI/2;water.position.set(0,-8,-65);scene.add(water);
+  for(let i=0;i<28;i++){
+    const z=2-i*5.2,side=i%2?-1:1,x=side*(7.2+(i%3)*1.1),sc=.7+(i%4)*.18;
+    const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(1.2*sc,1),stoneMat);
+    rock.scale.set(1.3,.8,1.2);rock.position.set(x,-1.7,z);rock.rotation.set(i*.1,i*.31,i*.13);rock.castShadow=true;scene.add(rock);decor.push(rock);
   }
+
+  // Cristais no centro de plataformas, com espaço para pousar sem colisão lateral.
+  [1,3,5,7,9,11,13,15,17].forEach((idx,i)=>{
+    const p=route[idx];addCrystal(p.x,p.top+1.25,p.z,i===8?'big':'normal');
+  });
+  // Obstáculos leves em ilhas largas; as primeiras travessias ficam limpas.
+  [5,11,15].forEach((idx,i)=>{
+    const p=route[idx];
+    const block=addBox(p.x+(i%2?1.25:-1.25),p.top+.35,p.z,.55,.7,.55,0xffca55);
+    block.rotation.y=.22;
+  });
+  createEnemy(1.25,-23);createEnemy(-1.25,-47,'charger');createEnemy(1.25,-87);createEnemy(-1.25,-119,'charger');
+  addBounce(0,-35);addBounce(0,-91);
+  addCheckpoint(-67);addCheckpoint(-131);
+  const gate=addGate(-146);
+  for(let i=0;i<8;i++)addCloud((i%2?-1:1)*(9+i%3*2),8+i%3,-8-i*17,.8+(i%3)*.15);
   return gate;
 }
 function applyVisualUpgrade(){
@@ -393,7 +360,7 @@ function bindControls(){
 }
 function doJump(){
   if(!running)return;
-  if(grounded){velocity.y=17.2;grounded=false;beep(430,.09,'square',.025)}
+  if(grounded){velocity.y=11.2;grounded=false;beep(430,.09,'square',.025)}
   else if(powerTime>0&&velocity.y<1.5){velocity.y=7.2;beep(620,.06,'sine',.02)}
 }
 
@@ -418,11 +385,11 @@ function updateMovement(dt){
   camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();camRight.crossVectors(camForward,up).normalize();
   moveDir.set(0,0,0).addScaledVector(camRight,ix).addScaledVector(camForward,iy);
   if(moveDir.lengthSq()>1)moveDir.normalize();
-  const accel=72,maxSpeed=powerTime>0?24:20;
+  const accel=40,maxSpeed=powerTime>0?14:11.5;
   velocity.x+=moveDir.x*accel*dt;velocity.z+=moveDir.z*accel*dt;
   const friction=Math.pow(moveDir.lengthSq()>.001?.16:.0008,dt);velocity.x*=friction;velocity.z*=friction;
   const sp=Math.hypot(velocity.x,velocity.z);if(sp>maxSpeed){const k=maxSpeed/sp;velocity.x*=k;velocity.z*=k}
-  velocity.y-=26*dt;
+  velocity.y-=24*dt;
   const oldY=player.position.y;player.position.addScaledVector(velocity,dt);
   player.position.x=THREE.MathUtils.clamp(player.position.x,world.minX,world.maxX);player.position.z=THREE.MathUtils.clamp(player.position.z,world.minZ,world.maxZ);
   grounded=false;
@@ -434,7 +401,7 @@ function updateMovement(dt){
     for(const p of platforms){
       const insideX=player.position.x>p.x1-.45&&player.position.x<p.x2+.45;
       const insideZ=player.position.z>p.z1-.45&&player.position.z<p.z2+.45;
-      if(insideX&&insideZ&&oldBottom>=p.top-.4&&newBottom<=p.top+.22){
+      if(insideX&&insideZ&&oldBottom>=p.top-.22&&newBottom<=p.top+.18){
         if(!landing||p.top>landing.top)landing=p;
       }
     }
