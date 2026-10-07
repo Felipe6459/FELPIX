@@ -45,29 +45,57 @@ for(let z=4;z>-2050;z-=18){for(const side of [-1,1]){const h=7+Math.random()*18,
 function streetLight(x,z){box(.09,5.2,.09,darkMat,x,2.6,z);box(1,.08,.08,darkMat,x+(x<0?-.45:.45),5.05,z);const glow=new THREE.PointLight(0xffdca3,18,14,2);glow.position.set(x+(x<0?-.9:.9),4.85,z);world.add(glow);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),new THREE.MeshBasicMaterial({color:0xffe5b2}));bulb.position.copy(glow.position);world.add(bulb)}
 for(let z=3;z>-2050;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
 
-const car=new THREE.Group();scene.add(car);let carReady=false;
-car.position.set(0,0,0);
+const car=new THREE.Group();scene.add(car);let carReady=true;
+car.position.set(0,.02,0);
+
+// Carro esportivo 3D visível imediatamente. O Ferrari real substitui este modelo quando terminar de carregar.
+function createSportCar(){
+  const g=new THREE.Group();
+  const bodyMat=new THREE.MeshStandardMaterial({color:0xb80f18,metalness:.72,roughness:.24});
+  const darkMat=new THREE.MeshStandardMaterial({color:0x090b10,metalness:.25,roughness:.28});
+  const glassMat=new THREE.MeshStandardMaterial({color:0x172b3b,metalness:.15,roughness:.08,transparent:true,opacity:.9});
+  const lightMat=new THREE.MeshStandardMaterial({color:0xfff2d0,emissive:0xffc56b,emissiveIntensity:1.5});
+  const tailMat=new THREE.MeshStandardMaterial({color:0xff1725,emissive:0x550005,emissiveIntensity:1.2});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.05,.42,4.35),bodyMat);
+  body.position.y=.48; g.add(body);
+  const nose=new THREE.Mesh(new THREE.CylinderGeometry(.42,.82,1.15,24),bodyMat);
+  nose.rotation.x=Math.PI/2;nose.scale.set(1.25,1,1);nose.position.set(0,.48,-2.05);g.add(nose);
+  const cabinShape=new THREE.Shape();
+  cabinShape.moveTo(-.82,0);cabinShape.lineTo(-.62,.48);cabinShape.lineTo(-.38,.78);cabinShape.lineTo(.38,.78);cabinShape.lineTo(.62,.48);cabinShape.lineTo(.82,0);cabinShape.lineTo(-.82,0);
+  const cabin=new THREE.Mesh(new THREE.ExtrudeGeometry(cabinShape,{depth:1.7,bevelEnabled:true,bevelSegments:3,bevelSize:.08,bevelThickness:.08}),glassMat);
+  cabin.rotation.x=Math.PI/2;cabin.position.set(0,.68,-.45);cabin.scale.set(1,1,.78);g.add(cabin);
+  for(const x of [-1.08,1.08])for(const z of [-1.42,1.42]){
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.22,24),darkMat);
+    w.rotation.z=Math.PI/2;w.position.set(x,.38,z);g.add(w);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.24,16),new THREE.MeshStandardMaterial({color:0x8b8f96,metalness:.9,roughness:.2}));
+    hub.rotation.z=Math.PI/2;hub.position.set(x,.38,z);g.add(hub);
+  }
+  for(const x of [-.72,.72]){const l=new THREE.Mesh(new THREE.BoxGeometry(.34,.12,.08),lightMat);l.position.set(x,.63,-2.2);g.add(l);const t=new THREE.Mesh(new THREE.BoxGeometry(.34,.12,.08),tailMat);t.position.set(x,.63,2.2);g.add(t)}
+  const spoiler=new THREE.Mesh(new THREE.BoxGeometry(1.65,.08,.35),darkMat);spoiler.position.set(0,.9,1.82);g.add(spoiler);
+  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  return g;
+}
+car.add(createSportCar());
 
 if(THREE.GLTFLoader){
   const loader=new THREE.GLTFLoader();
   const carUrl='https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb';
   loader.load(carUrl,g=>{
-    while(car.children.length)car.remove(car.children[0]);
-    const model=g.scene.children[0]||g.scene;
-    model.scale.setScalar(1.15);
-    model.position.set(0,.02,0);
+    const model=g.scene;
+    const box3=new THREE.Box3().setFromObject(model);
+    const size=box3.getSize(new THREE.Vector3());
+    const center=box3.getCenter(new THREE.Vector3());
+    const maxSize=Math.max(size.x,size.y,size.z)||1;
+    model.scale.setScalar(4.1/maxSize);
+    model.position.set(-center.x*model.scale.x,-box3.min.y*model.scale.y+.02,-center.z*model.scale.z);
     model.rotation.y=Math.PI;
     model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+    while(car.children.length)car.remove(car.children[0]);
     car.add(model);
     carReady=true;
   },undefined,err=>{
-    console.error('Falha ao carregar Ferrari 3D',err);
-    loading.textContent='FALHA AO CARREGAR O CARRO 3D';
-    setTimeout(hideLoading,1200);
+    console.warn('Ferrari externo não carregou; mantendo carro esportivo local.',err);
   });
-}else{
-  loading.textContent='ERRO AO CARREGAR O CARRO 3D';
-  setTimeout(hideLoading,1200);
 }
 hideLoading();
 
