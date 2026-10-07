@@ -434,7 +434,7 @@ function updateMovement(dt){
     for(const p of platforms){
       const insideX=player.position.x>p.x1-.45&&player.position.x<p.x2+.45;
       const insideZ=player.position.z>p.z1-.45&&player.position.z<p.z2+.45;
-      if(insideX&&insideZ&&oldBottom>=p.top-.08&&newBottom<=p.top+.22){
+      if(insideX&&insideZ&&oldBottom>=p.top-.4&&newBottom<=p.top+.22){
         if(!landing||p.top>landing.top)landing=p;
       }
     }
