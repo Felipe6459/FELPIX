@@ -94,6 +94,8 @@ for(let z=3;z>-400;z-=14){streetLight(-7.3,z);streetLight(7.3,z-7)}
 
 let car=new THREE.Group();scene.add(car);
 let loaded=false;
+function hideLoading(){document.getElementById('loading').classList.add('hidden')}
+setTimeout(hideLoading,1400);
 const loader=new GLTFLoader();
 loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{
   car=g.scene;
@@ -104,7 +106,8 @@ loader.load('https://threejs.org/examples/models/gltf/ferrari.glb',g=>{
   scene.add(car);loaded=true;
   document.getElementById('loading').classList.add('hidden');
 },undefined,()=>{
-  document.getElementById('loading').textContent='NÃO FOI POSSÍVEL CARREGAR O CARRO';
+  loaded=false;
+  hideLoading();
 });
 
 let steer=0,gas=false,speed=0,offset=0,last=performance.now();
