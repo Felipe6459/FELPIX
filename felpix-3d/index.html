@@ -83,63 +83,61 @@ function createPlayer(){
   player=new THREE.Group();
   player.position.set(0,1.25,6);
   body=new THREE.Group();player.add(body);
-
-  // Aventureiro estilizado com silhueta limpa e proporções mais equilibradas.
-  const skin=material(0xe9b38d,.56,.01), hair=material(0x382638,.7,.01);
-  const jacket=material(0x4930a0,.42,.12), jacketLight=material(0x8065dc,.38,.16);
-  const pants=material(0x292c49,.62,.04), bootMat=material(0x242034,.48,.08);
-  const gold=material(0xffca55,.3,.32), white=material(0xfff8ec,.24,.02);
-  const eyeMat=material(0x202039,.3,.02), cyan=new THREE.MeshStandardMaterial({color:0x55eaff,emissive:0x168da8,emissiveIntensity:.45,roughness:.3,metalness:.25});
+  // Silhueta humana low-poly: cabeça menor, tronco afunilado, membros separados,
+  // calças e botas abaixo do corpo para alinhar os pés ao plano de colisão.
+  const skin=material(0xc98e69,.82,.01), hair=material(0x292433,.78,.01);
+  const coat=material(0x176b78,.62,.04), coatLight=material(0x35a2a5,.48,.08);
+  const pants=material(0x29364a,.8,.01), boots=material(0x3a2930,.68,.04);
+  const leather=material(0x754a36,.8,.01), brass=material(0xe9b957,.38,.22);
+  const white=material(0xf8f4e9,.35,.01), iris=material(0x2d536b,.32,.03);
   const add=(geo,mat,x,y,z,sx=1,sy=1,sz=1,parent=body)=>{
     const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);
     m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
   };
-
-  // Pernas, botas e sola.
+  // Botas com sola e caneleiras.
   for(const side of [-1,1]){
-    const leg=add(new THREE.CapsuleGeometry(.125,.34,5,12),pants,side*.19,-.43,0,1,1,.92);
+    const leg=add(new THREE.CapsuleGeometry(.095,.34,4,10),pants,side*.145,-.59,0,1,1,.9);
     leg.name=side<0?'boot-1':'boot1';
-    add(new THREE.BoxGeometry(.29,.17,.39),bootMat,side*.19,-.69,.09);
-    add(new THREE.BoxGeometry(.3,.045,.4),gold,side*.19,-.77,.09);
+    add(new THREE.BoxGeometry(.22,.22,.34),boots,side*.145,-.91,.065);
+    add(new THREE.BoxGeometry(.23,.045,.35),brass,side*.145,-1.035,.065);
+    add(new THREE.BoxGeometry(.12,.15,.12),leather,side*.145,-.72,-.055);
   }
-  // Tronco, colete e cinto.
-  add(new THREE.CapsuleGeometry(.31,.53,6,14),jacket,0,.02,0,1.08,1.05,.8);
-  add(new THREE.BoxGeometry(.12,.53,.035),jacketLight,0,.02,.265);
-  add(new THREE.TorusGeometry(.3,.045,8,20),gold,0,-.28,0,1,1,.82);
-  add(new THREE.BoxGeometry(.13,.13,.045),gold,0,-.28,.31);
-  // Pescoço e cabeça.
-  add(new THREE.CylinderGeometry(.12,.14,.18,14),skin,0,.42,0);
-  add(new THREE.SphereGeometry(.34,24,18),skin,0,.77,.015,1,.99,.9);
-  add(new THREE.SphereGeometry(.36,22,14),hair,0,.91,-.055,1.02,.63,.95);
-  add(new THREE.SphereGeometry(.29,20,12,0,Math.PI*2,0,Math.PI*.45),jacket,0,.98,.015,1.05,1,.98);
-  add(new THREE.TorusGeometry(.23,.025,7,20),gold,0,.94,.29,1,.6,.45);
+  // Quadril, casaco e gola.
+  add(new THREE.CapsuleGeometry(.205,.22,4,10),pants,0,-.27,0,1,.8,.85);
+  add(new THREE.CapsuleGeometry(.255,.43,5,12),coat,0,.075,0,1,.98,.76);
+  add(new THREE.CylinderGeometry(.18,.22,.11,8),brass,0,-.18,.015,1,.8,.8);
+  add(new THREE.BoxGeometry(.075,.4,.025),coatLight,0,.08,.197);
+  add(new THREE.BoxGeometry(.12,.1,.035),brass,0,-.17,.22);
+  add(new THREE.CylinderGeometry(.085,.095,.13,10),skin,0,.37,.005);
+  // Cabeça, cabelo curto e faixa de explorador.
+  add(new THREE.SphereGeometry(.255,16,12),skin,0,.68,.015,1,.98,.9);
+  add(new THREE.SphereGeometry(.265,14,10,0,Math.PI*2,0,Math.PI*.56),hair,0,.79,-.045,1,.8,.95);
+  add(new THREE.BoxGeometry(.42,.075,.3),leather,0,.865,.01);
+  add(new THREE.BoxGeometry(.18,.055,.315),brass,0,.865,.015);
+  // Olhos e sobrancelhas pequenos para o rosto ficar legível à distância.
   for(const side of [-1,1]){
-    add(new THREE.SphereGeometry(.075,14,10),white,side*.125,.78,.302,1,.95,.5);
-    add(new THREE.SphereGeometry(.038,12,8),eyeMat,side*.125,.78,.335,1,1,.5);
-    const brow=add(new THREE.CapsuleGeometry(.018,.08,3,6),hair,side*.125,.89,.31);
-    brow.rotation.z=side*-.08;
-    add(new THREE.SphereGeometry(.07,12,8),skin,side*.33,.76,0,.65,1,.65);
+    add(new THREE.SphereGeometry(.045,10,8),white,side*.09,.69,.231,1,1,.45);
+    add(new THREE.SphereGeometry(.023,9,7),iris,side*.09,.69,.252,1,1,.45);
+    const brow=add(new THREE.BoxGeometry(.09,.022,.025),hair,side*.09,.755,.235);
+    brow.rotation.z=side*.08;
   }
-  // Sorriso discreto.
-  const smile=add(new THREE.TorusGeometry(.07,.012,5,14,Math.PI),material(0x8c4b48),0,.64,.308,1,.65,.4);
-  smile.rotation.z=Math.PI;
-  // Braços simples, luvas e ombreiras; os nomes preservam a animação existente.
+  add(new THREE.CapsuleGeometry(.012,.07,3,5),skin,0,.63,.244,1,1,.45);
+  // Ombros, braços e luvas; a animação existente usa estes nomes.
   for(const side of [-1,1]){
-    add(new THREE.SphereGeometry(.145,14,10),jacketLight,side*.34,.23,0);
-    const arm=add(new THREE.CapsuleGeometry(.09,.36,5,10),skin,side*.42,-.015,.005);
+    add(new THREE.SphereGeometry(.12,10,8),coatLight,side*.28,.23,0);
+    const arm=add(new THREE.CapsuleGeometry(.072,.31,4,9),coat,side*.34,.015,.005);
     arm.name=side<0?'arm-1':'arm1';arm.rotation.z=side*-.12;
-    add(new THREE.SphereGeometry(.115,12,8),bootMat,side*.44,-.25,.04);
-    add(new THREE.TorusGeometry(.1,.018,5,14),gold,side*.43,-.18,.03,1,.8,1);
+    add(new THREE.SphereGeometry(.075,10,8),skin,side*.36,-.19,.025);
+    add(new THREE.SphereGeometry(.082,10,8),leather,side*.37,-.27,.045);
+    add(new THREE.TorusGeometry(.073,.012,4,10),brass,side*.36,-.205,.025,1,.8,1);
   }
-  // Mochila compacta com emblema luminoso.
-  add(new THREE.BoxGeometry(.34,.43,.17),pants,0,.04,-.29);
-  add(new THREE.BoxGeometry(.23,.27,.035),jacketLight,0,.05,-.39);
-  add(new THREE.OctahedronGeometry(.075,0),cyan,0,.07,-.42);
-  const aura=add(new THREE.TorusGeometry(.48,.014,5,28),cyan,0,-.91,0,1,.3,1);
-  aura.rotation.x=Math.PI/2;
-
-  shadow=new THREE.Mesh(new THREE.CircleGeometry(.58,28),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));
-  shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.22;player.add(shadow);scene.add(player);
+  // Mochila de couro compacta, com fivelas visíveis no perfil.
+  add(new THREE.BoxGeometry(.29,.38,.16),leather,0,.03,-.22);
+  add(new THREE.BoxGeometry(.22,.055,.18),brass,0,.13,-.315);
+  add(new THREE.BoxGeometry(.055,.23,.025),coatLight,-.07,.02,-.315);
+  // Sombra no chão; sem aro luminoso exagerado em volta dos pés.
+  shadow=new THREE.Mesh(new THREE.CircleGeometry(.43,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.34}));
+  shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.235;player.add(shadow);scene.add(player);
 }
 function addPlatform(x,y,z,w,h,d,c){
   const m=addBox(x,y,z,w,h,d,c);m.userData.platform=true;
