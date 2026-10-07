@@ -80,65 +80,94 @@ function beep(freq=520,dur=.06,type='sine',gain=.035){try{audioCtx=audioCtx||new
 function showToast(t){toastEl.textContent=t;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1500)}
 
 function createPlayer(){
-  player=new THREE.Group();player.position.set(0,1.25,6);body=new THREE.Group();player.add(body);
+  player=new THREE.Group();
+  player.position.set(0,1.25,6);
+  body=new THREE.Group();
+  player.add(body);
 
-  // Personagem redesenhado: formas arredondadas, proporções de mascote e detalhes de rosto.
-  const skin=material(0xf2b995,.55,.02);
-  const suit=material(0x6541c7,.42,.12);
-  const suit2=material(0x8b63ee,.38,.16);
-  const dark=material(0x241735,.34,.12);
-  const gold=material(0xffd45a,.3,.35);
-  const white=material(0xffffff,.28,.02);
+  // Mascote mais trabalhado: silhueta de aventureiro, rosto expressivo,
+  // roupa em camadas, luvas, botas, cinto, mochila e detalhes emissivos.
+  const skin=material(0xf0bd98,.48,.02);
+  const skinShadow=material(0xc98567,.62,.01);
+  const suit=material(0x4b2b9d,.38,.15);
+  const suitLight=material(0x8762ed,.32,.2);
+  const suitDark=material(0x292044,.52,.08);
+  const hair=material(0x342338,.68,.01);
+  const gold=material(0xffcf54,.28,.5);
+  const white=material(0xfffbf4,.22,.04);
+  const iris=material(0x43d8ee,.2,.45);
+  const black=material(0x171321,.25,.04);
 
-  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.46,.62,8,18),suit);
-  torso.scale.set(1.05,1.15,.78);torso.position.y=.02;body.add(torso);
+  const add=(geo,mat,x,y,z,sx=1,sy=1,sz=1,parent=body)=>{
+    const m=new THREE.Mesh(geo,mat);
+    m.position.set(x,y,z);m.scale.set(sx,sy,sz);
+    m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+  };
 
-  const chest=new THREE.Mesh(new THREE.SphereGeometry(.43,20,14),suit2);
-  chest.scale.set(1.02,.72,.62);chest.position.set(0,.18,.16);body.add(chest);
+  // Tronco e roupa com volumes sobrepostos em vez de uma única cápsula.
+  add(new THREE.CapsuleGeometry(.39,.62,8,18),suit,0,.02,0,1.1,1.05,.82);
+  add(new THREE.SphereGeometry(.405,22,16),suitLight,0,.17,.12,1.02,.66,.72);
+  add(new THREE.CylinderGeometry(.17,.19,.2,16),skin,0,.52,0);
+  add(new THREE.TorusGeometry(.37,.065,10,24),gold,0,-.31,0,1,1,.88);
+  add(new THREE.BoxGeometry(.19,.18,.07),gold,0,-.31,.35);
+  add(new THREE.OctahedronGeometry(.105,1),iris,0,.12,.47,1,1.15,.55);
 
-  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.16,.18,.22,16),skin);
-  neck.position.y=.57;body.add(neck);
-
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.48,24,18),skin);
-  head.scale.set(1,.98,.92);head.position.y=.92;body.add(head);
-
-  // Cabelo e boné com volume, em vez do antigo bloco quadrado.
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(.5,20,14),dark);
-  hair.scale.set(1.02,.62,.96);hair.position.set(0,1.18,-.03);body.add(hair);
-
-  const cap=new THREE.Mesh(new THREE.SphereGeometry(.51,20,12,0,Math.PI*2,0,Math.PI*.48),suit);
-  cap.scale.set(1.03,.7,1.02);cap.position.set(0,1.29,.02);body.add(cap);
-  const brim=new THREE.Mesh(new THREE.SphereGeometry(.3,18,10),suit2);
-  brim.scale.set(1.65,.22,.7);brim.position.set(0,1.2,.38);body.add(brim);
-
+  // Pescoço, cabeça, queixo e orelhas.
+  add(new THREE.SphereGeometry(.43,28,20),skin,0,.91,.025,1,1.06,.92);
+  add(new THREE.SphereGeometry(.29,20,14),skinShadow,0,.72,.17,1,.42,.7);
   for(const s of [-1,1]){
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(.082,14,10),white);
-    eye.position.set(s*.17,.96,.425);body.add(eye);
-    const pupil=new THREE.Mesh(new THREE.SphereGeometry(.038,12,8),dark);
-    pupil.position.set(s*.17,.96,.495);body.add(pupil);
-    const shoe=new THREE.Mesh(new THREE.SphereGeometry(.25,16,10),dark);
-    shoe.scale.set(1.05,.65,1.45);shoe.position.set(s*.25,-.63,.18);
-    shoe.name='boot'+s;body.add(shoe);
-    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.13,.34,6,12),suit);
-    leg.position.set(s*.25,-.38,.02);leg.name='leg'+s;body.add(leg);
-    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.115,.46,6,12),skin);
-    arm.position.set(s*.58,.03,.03);arm.rotation.z=s*.25;arm.name='arm'+s;body.add(arm);
-    const glove=new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),white);
-    glove.position.set(s*.69,-.27,.05);body.add(glove);
+    add(new THREE.SphereGeometry(.105,16,12),skin,s*.405,.9,0,.78,1,.65);
+    add(new THREE.SphereGeometry(.047,12,8),skinShadow,s*.44,.9,.025);
   }
 
-  const belt=new THREE.Mesh(new THREE.TorusGeometry(.43,.065,8,24),gold);
-  belt.rotation.x=Math.PI/2;belt.scale.z=.8;belt.position.y=-.31;body.add(belt);
-  const badge=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),gold);
-  badge.position.set(0,.13,.49);badge.rotation.y=Math.PI/4;body.add(badge);
+  // Cabelo e boné/tiara em camadas.
+  add(new THREE.SphereGeometry(.44,24,16),hair,0,1.12,-.035,1.03,.72,.98);
+  add(new THREE.SphereGeometry(.31,20,12),hair,-.23,1.14,.16,.75,.52,.68);
+  add(new THREE.SphereGeometry(.33,24,14,0,Math.PI*2,0,Math.PI*.47),suit,0,1.18,.02,1.12,1,.98);
+  add(new THREE.SphereGeometry(.28,20,12),suitLight,0,1.15,.27,1.08,.2,.5);
+  add(new THREE.TorusGeometry(.27,.035,8,24),gold,0,1.12,.3,1,.55,.45);
 
-  const backpack=new THREE.Mesh(new THREE.SphereGeometry(.35,16,12),suit);
-  backpack.scale.set(.9,1,.45);backpack.position.set(0,.04,-.42);body.add(backpack);
+  // Olhos com íris, brilho, sobrancelhas e sorriso discreto.
+  for(const s of [-1,1]){
+    add(new THREE.SphereGeometry(.095,18,12),white,s*.155,.94,.39,1,.92,.55);
+    add(new THREE.SphereGeometry(.052,16,12),iris,s*.155,.935,.438,1,1,.55);
+    add(new THREE.SphereGeometry(.027,12,8),black,s*.155,.935,.463,1,1,.5);
+    add(new THREE.SphereGeometry(.015,8,6),white,s*.17,.96,.477);
+    const brow=add(new THREE.CapsuleGeometry(.025,.105,4,8),hair,s*.155,1.075,.405);
+    brow.rotation.z=s*-.1;
+  }
+  const smile=add(new THREE.TorusGeometry(.09,.018,6,16,Math.PI),skinShadow,0,.79,.407,1,.65,.45);
+  smile.rotation.z=Math.PI;
 
-  shadow=new THREE.Mesh(new THREE.CircleGeometry(.64,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));
+  // Braços articulados visualmente, ombreiras e luvas.
+  for(const s of [-1,1]){
+    const shoulder=add(new THREE.SphereGeometry(.19,16,12),suitLight,s*.43,.35,0,1,.92,1);
+    const arm=add(new THREE.CapsuleGeometry(.105,.39,6,12),skin,s*.51,.08,.015,1,1,.92);
+    arm.name=s<0?'arm-1':'arm1';arm.rotation.z=s*-.12;
+    add(new THREE.SphereGeometry(.13,14,10),white,s*.55,-.18,.06);
+    add(new THREE.TorusGeometry(.12,.025,6,16),gold,s*.52,-.1,.04,1,.8,1);
+  }
+
+  // Pernas e botas com sola clara, biqueira e cadarços.
+  for(const s of [-1,1]){
+    const leg=add(new THREE.CapsuleGeometry(.13,.32,6,12),suitDark,s*.19,-.48,.005);
+    leg.name=s<0?'boot-1':'boot1';
+    add(new THREE.SphereGeometry(.17,16,12),suitLight,s*.19,-.65,.025,.9,.72,.85);
+    add(new THREE.SphereGeometry(.205,16,10),suitDark,s*.19,-.78,.105,1.08,.55,1.35);
+    add(new THREE.BoxGeometry(.15,.025,.025),white,s*.19,-.68,.2);
+  }
+
+  // Mochila técnica, cantil e luzes laterais.
+  add(new THREE.SphereGeometry(.28,18,14),suitDark,0,.08,-.36,1,1.18,.7);
+  add(new THREE.BoxGeometry(.3,.32,.12),suitLight,0,.1,-.53);
+  add(new THREE.CylinderGeometry(.055,.055,.22,12),gold,.22,.1,-.44);
+  add(new THREE.SphereGeometry(.07,12,8),iris,-.27,.16,-.38);
+  const aura=add(new THREE.TorusGeometry(.56,.018,6,32),iris,0,-.95,0,1,.35,1);
+  aura.rotation.x=Math.PI/2;
+
+  shadow=new THREE.Mesh(new THREE.CircleGeometry(.68,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.34}));
   shadow.rotation.x=-Math.PI/2;shadow.position.y=-1.22;player.add(shadow);scene.add(player);
 }
-
 function addPlatform(x,y,z,w,h,d,c){
   const m=addBox(x,y,z,w,h,d,c);m.userData.platform=true;
   platforms.push({mesh:m,top:y+h/2,x1:x-w/2,x2:x+w/2,z1:z-d/2,z2:z+d/2});
@@ -379,7 +408,7 @@ function bindControls(){
 }
 function doJump(){
   if(!running)return;
-  if(grounded){velocity.y=16.0;grounded=false;beep(430,.09,'square',.025)}
+  if(grounded){velocity.y=17.2;grounded=false;beep(430,.09,'square',.025)}
   else if(powerTime>0&&velocity.y<1.5){velocity.y=7.2;beep(620,.06,'sine',.02)}
 }
 
@@ -404,7 +433,7 @@ function updateMovement(dt){
   camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();camRight.crossVectors(camForward,up).normalize();
   moveDir.set(0,0,0).addScaledVector(camRight,ix).addScaledVector(camForward,iy);
   if(moveDir.lengthSq()>1)moveDir.normalize();
-  const accel=42,maxSpeed=powerTime>0?15.5:12.5;
+  const accel=58,maxSpeed=powerTime>0?21:17;
   velocity.x+=moveDir.x*accel*dt;velocity.z+=moveDir.z*accel*dt;
   const friction=Math.pow(.00055,dt);velocity.x*=friction;velocity.z*=friction;
   if(moveDir.lengthSq()<.001){velocity.x*=Math.pow(.00008,dt);velocity.z*=Math.pow(.00008,dt)}
